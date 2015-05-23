@@ -2,27 +2,34 @@ package com.crash.rettina;
 
 import java.util.ArrayList;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 
+import com.crash.connection.Connect;
 import com.crash.customlist.CustomAdapter;
 import com.crash.customlist.ListModel;
 import com.crash.routeinfo.Route;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
 
 public class RouteMenu extends Fragment {
 	
 	ArrayList<String> listItems = new ArrayList<String>();
 	ArrayList<Route> selectedFavs = new ArrayList<Route>();
+	ListView lv_favs;
 
 
 	MainActivity a;
@@ -34,6 +41,7 @@ public class RouteMenu extends Fragment {
     ListView lv;
     GetJSON json;
 
+	@SuppressLint("NewApi")
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	      Bundle savedInstanceState) {
 	    View view = inflater.inflate(R.layout.routemenu,
@@ -60,11 +68,14 @@ public class RouteMenu extends Fragment {
         Resources res = getResources();
         
        a = (MainActivity) getActivity();
-       json = new GetJSON(a, a.googleMap,this);
-	    json.execute();
+       
+   		listItems.add("My Location");
+       
+//       json = new GetJSON(a, a.googleMap,this);
+//	   json.execute();
 
        
-	    final ListView lv_favs = (ListView) view.findViewById(R.id.listview_favs);	
+	    lv_favs = (ListView) view.findViewById(R.id.listview_favs);	
 	    /**************** Create Custom Adapter *********/
         adapter=new CustomAdapter(fav.getActivity(), selectedFavs,res, fav);
         lv_favs.setAdapter( adapter );
@@ -80,12 +91,32 @@ public class RouteMenu extends Fragment {
 					long arg3) {
 				
 				 //TextView c = (TextView) arg1.findViewById(R.id.listview_routefilter);
-		         Route clickedRoute = (Route)a.routes.get(arg2);
-
+				
+				// Take the clicked route from the route search and add it to the favorites.. +1 is used because
+				// "My location" is added to spot 0 of the listview
+				
+				// If "My Location" is clicked, zoom to the user's location as long as it is not null
+				if(arg2 < 1){
+		         		 if(a.lat_Lng != null){
+		        		 a.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(a.lat_Lng, 15));
+		         		 }
+		         
+				}
+		         else{
+		         Route clickedRoute = (Route)a.routes.get(arg2 - 1);
+				
 				 //String selectedRoute = data;
+		         
+		         if(clickedRoute.getStops().size() == 0){
+						System.out.println("Getting Stops");
+						a.getStops(clickedRoute);
+					}
+		         
 				 				 	
 //				 selectedFavs.add(Integer.toString(clickedRoute.getRouteID()));
 		         selectedFavs.add(clickedRoute);
+		         
+		         
 		         
 		         
 				// CustomListViewValuesArr.add(clickedRoute);
@@ -93,11 +124,12 @@ public class RouteMenu extends Fragment {
 				 ((BaseAdapter)lv_favs.getAdapter()).notifyDataSetChanged();
 				 
 				 
-//				 a.drawRoute(a.);
+//				 a.drawRoute(clickedRoute);
+		         }
 			}
 		});
-
-		
+    	    	
+    			
         a.getRoutes();
 
 	    	      
@@ -105,19 +137,40 @@ public class RouteMenu extends Fragment {
 	    
 	  }
 	
+	public void removeRouteFromFav(Route r){
+        selectedFavs.remove(r);
+		 ((BaseAdapter)lv_favs.getAdapter()).notifyDataSetChanged();
+		 System.out.println("Route Removed from favs!");
+
+	}
+	
 	public void drawRoute(Route r){
 		a.drawRoute(r);
 	}
+	
+	public void hideRoute(Route r){
+		a.hideRoute(r);
+	}
+	
+	public void showStops(Route r){
+		a.showStops(r);
+	}
+	
+	public void hideStops(Route r){
+		a.hideStops(r);
+	}
+	
     
     public void setRouteData()
     {
-    	System.out.println("Setting Data!!!");
-    	System.out.println("Route Size: " + a.routes.size());
+    	//System.out.println("Setting Data!!!");
+    	//System.out.println("Route Size: " + a.routes.size());
 
     	listItems.clear();
+    	listItems.add("My Location");
         for(int i = 0; i < a.routes.size(); i++){
             
-        	listItems.add(Integer.toString(a.routes.get(i).getRouteID()));
+        	listItems.add(a.routes.get(i).getRouteTitle());
         	
         }
         

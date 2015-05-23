@@ -1,35 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-          android:layout_width="fill_parent"
-          android:layout_height="65dp"
-          android:background="@color/dark_blue" >
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/dark_blue"
+    android:paddingBottom="15dp"
+    android:paddingTop="15dp" >
 
-    <CheckBox
-        android:id="@+id/cb_showroute"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true" />
+    <ImageButton
+        android:id="@+id/imgbtn_followroute"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignTop="@+id/imgbtn_removeroute"
+        android:layout_alignBottom="@+id/imgbtn_removeroute"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="10dp"
+        android:layout_toLeftOf="@+id/imgbtn_removeroute"
+        android:background="@android:color/transparent"
+        android:src="@drawable/locmarker" />
+
+    <ImageButton
+        android:id="@+id/imgbtn_removeroute"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="10dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/remove" />
 
     <TextView
         android:id="@+id/tv_routename"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/cb_showroute"
-        android:layout_alignBottom="@+id/cb_showroute"
-        android:layout_marginLeft="21dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="22dp"
         android:layout_toRightOf="@+id/cb_showroute"
         android:text="TextView"
         android:textColor="@color/white" />
 
-    <ImageButton
-        android:id="@+id/imgbtn_removeroute"
-        android:layout_width="13dp"
-        android:layout_height="13dp"
-        android:layout_alignParentRight="true"
-        android:layout_centerInParent="true"
-        android:layout_marginRight="10dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/abc_ic_clear_mtrl_alpha" />
-        
+    <CheckBox
+        android:id="@+id/cb_showroute"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true" />
+
 </RelativeLayout>

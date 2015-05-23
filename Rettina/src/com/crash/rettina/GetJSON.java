@@ -3,6 +3,7 @@ package com.crash.rettina;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,17 +18,28 @@ import android.util.Log;
 import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.VisibleRegion;
 
 public class GetJSON extends AsyncTask<Void, Void, Void> {
 	private ProgressDialog pDialog;
 	private Map<String, LatLng> vehicles = new LinkedHashMap<String, LatLng>();
+	private Map<Integer, ArrayList<String>> routeColors = new LinkedHashMap<Integer, ArrayList<String>>();
+
 	private ArrayList<Stop> stops = new ArrayList<Stop>();
 	private ArrayList<Route> routes = new ArrayList<Route>();
 
 	ArrayList<LatLng> routeLocations = new ArrayList<LatLng>();
+	
+	// Variables to hold the coordinates of the NorthEast and SouthWest corners of the screen
+	// They are set by calling getScreenCornerCoordinates()
+	private LatLng southWest;
+	private LatLng northEast;
 
 	public MainActivity activity;
 	public RouteMenu routeMenu;
@@ -39,6 +51,12 @@ public class GetJSON extends AsyncTask<Void, Void, Void> {
 	public GetJSON( MainActivity a, GoogleMap m, RouteMenu rm) {
 		this.activity = a;
 		routeMenu = rm;
+		map = m;
+	}
+	
+	public GetJSON( MainActivity a, GoogleMap m) {
+		this.activity = a;
+		//routeMenu = rm;
 		map = m;
 	}
 	
@@ -63,10 +81,8 @@ public class GetJSON extends AsyncTask<Void, Void, Void> {
 		ServiceHandler sh = new ServiceHandler();
 		getVehicles();
 		getStops();
-		for(int i = 0; i < routes.size(); i++){
-			routes.get(i).printRoute();
-		}
-		return null;
+		getRoutes();
+	return null;
 	}
 	
 	@Override
@@ -109,20 +125,33 @@ public class GetJSON extends AsyncTask<Void, Void, Void> {
 		
 		
 		for(int i = 0; i < routes.size(); i++){
-			c = Color.argb(255, 255, 0, 0);
 			
+			 for (Entry<Integer, ArrayList<String>> entry : routeColors.entrySet()) {
+			        String key = entry.getKey().toString();;
+			        ArrayList<String> value = entry.getValue();			
+
+				if(key.equals(Integer.toString((routes.get(i).getRouteID())))){
+										
+					routes.get(i).setRouteTitle(value.get(0));
+					
+					c = Color.parseColor(value.get(1));
+					break;
+				}
+				
+			}
+				 
+							
 			routes.get(i).setAllRoutePoints();
 			
-			// Problem is with tempPoly
 			PolylineOptions tempPoly = drawPrimaryLinePath(routes.get(i).routePoints, c);
 			
 			
-			routes.get(i).setPolyLine(tempPoly);
+			routes.get(i).setPolyLineOptions(tempPoly);
 		}
 				
 		
 		activity.routes = routes;
-		routeMenu.setRouteData();
+		//routeMenu.setRouteData();
 		
 	}
 
@@ -174,9 +203,19 @@ public class GetJSON extends AsyncTask<Void, Void, Void> {
 							"Latitude").toString()), Double.parseDouble(jsonObj
 							.get("Longitude").toString()));
 					
+					
+					// Create new Stop object so it can be stored in a route
+					// Temporarily creating the markers so the marker information can be set later in the Route class for now...
+					
+//					Marker temp = map.addMarker(new MarkerOptions()
+//					.position(null).title(
+//							""));
+					
 					Stop tempStop = new Stop((Integer) jsonObj.get("RouteID"),
 							(Integer) jsonObj.get("RouteStopID"), jsonObj.get(
 									"Description").toString(), lat_Lng);
+					
+//					tempStop.setMarker(temp);
 					
 					
 					// System.out.println("Stop: " +
@@ -205,6 +244,87 @@ public class GetJSON extends AsyncTask<Void, Void, Void> {
 					
 					stops.add(tempStop);
 				}
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Log.e("ServiceHandler", "Couldn't get any data from the url");
+		}
+
+	}
+	
+	public void getRoutes() {
+		ServiceHandler sh = new ServiceHandler();
+
+		String sh_Routes = sh.makeServiceCall(
+				"http://www.uconnshuttle.com/Services/JSONPRelay.svc/GetRoutes",
+				ServiceHandler.GET);
+		if (sh_Routes != null) {
+			try {
+				JSONArray jsonArray = new JSONArray(sh_Routes);
+				
+				// looping through All Contacts
+				for (int i = 0; i < jsonArray.length(); i++) {
+					JSONObject jsonObj = jsonArray.getJSONObject(i);
+					
+					Integer routeID =  (Integer)jsonObj.get("RouteID");
+					ArrayList<String> tempArray = new ArrayList<String>();
+					
+					String description = jsonObj.get(
+							"Description").toString();
+					
+					String routeColor = jsonObj.get("MapLineColor").toString();
+					tempArray.add(description);
+					tempArray.add(routeColor);
+					
+					
+					routeColors.put(routeID, tempArray);
+					
+
+							
+//					System.out.println("Description: " + tempArray.get(0));
+//					System.out.println("Line Color: " + tempArray.get(1));
+//					System.out.println("RouteID: " + routeID);
+
+
+					
+					// System.out.println("Stop: " +
+					// jsonObj.get("Description"));
+					// System.out.println("Lat: " + jsonObj.get("Latitude"));
+					// System.out.println("Long: " + jsonObj.get("Longitude"));
+					// System.out.println("RouteID: " + jsonObj.get("RouteID"));
+//					for(int j = 0; j < jsonObj.getJSONArray("MapPoints").length(); j++){
+					 
+					 
+					 // Make a temporary lat/lng for each given point along the route.. Add this to the arrayList routeLocations
+					 // Call the method drawPrimaryLinePath() and pass it the routeLocations arrayList so it can draw the route lines
+					 // On the Google Map
+						
+				//	System.out.println("Lat: " + Double.parseDouble((String)jsonObj.getJSONArray("MapPoints").getJSONObject(j).getString("Latitude")) + "Long: " + Double.parseDouble((String)jsonObj.getJSONArray("MapPoints").getJSONObject(j).getString("Longitude")));
+//					 LatLng tempLatLng = new LatLng(Double.parseDouble((String)jsonObj.getJSONArray("MapPoints").getJSONObject(j).getString("Latitude")), Double.parseDouble((String)jsonObj.getJSONArray("MapPoints").getJSONObject(j).getString("Longitude")));
+//					 
+//					 tempStop.fillRouteList(tempLatLng);
+//					}
+					
+
+					// Create the lat/lng for the given stop
+					
+
+					// Put each stop into an array list made of Stop objects....'
+					
+//					stops.add(tempStop);
+				}
+//				
+//				 for (Integer key : routeColors.keySet()) {
+//				        System.out.println(key + " " + routeColors.get(key));
+//				    }
+//
+//				    for (Entry<Integer, ArrayList<String>> entry : routeColors.entrySet()) {
+//				        String key = entry.getKey().toString();;
+//				        ArrayList<String> value = entry.getValue();
+//				        System.out.println("key, " + key + " value " + value.get(0) + "value " + value.get(1));
+//				    }
 
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -263,10 +383,35 @@ public class GetJSON extends AsyncTask<Void, Void, Void> {
 		}
 
 		//map.addPolyline(options);
-		System.out.println("Temp Poly size: " + options.getPoints().size());
+		//System.out.println("Temp Poly size: " + options.getPoints().size());
 
 		return options;
 
 	}
+	
+	// This method gets the latitude and longitude of the northeast and southwest coordinates of the screen
+	// When viewing the GoogleMap
+	public void getScreenCornerCoordinates(){
+		LatLngBounds llBounds = map.getProjection().getVisibleRegion().latLngBounds;
+		southWest = llBounds.southwest;
+		northEast = llBounds.northeast;
+				
+		double north = northEast.latitude;
+		double south = southWest.latitude;
+		double east = northEast.longitude;
+		double west = southWest.longitude;
+		
+		System.out.println("NorthEast: " + northEast + " SouthWest: " + southWest);
+	}
+	
+//	public void setStopMarkers(){
+//		for(int i = 0; i < stops.size(); i++){
+//			Marker temp = map.addMarker(new MarkerOptions()
+//			.position(null).title(
+//					""));
+//			
+//			stops.get(i).setMarker(temp);
+//		}
+//	}
 
 }

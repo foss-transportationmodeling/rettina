@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/dark_blue"
+    android:paddingBottom="13dp"
+    android:paddingTop="13dp" >
+
+    <TextView
+        android:id="@+id/tv_stoptime1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/tv_stopname"
+        android:layout_alignBottom="@+id/tv_stopname"
+        android:layout_alignRight="@+id/tv_stoptime2"
+        android:layout_marginRight="65dp"
+        android:text="12:00 pm"
+        android:textColor="@color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_stoptime2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/tv_stoptime1"
+        android:layout_alignBottom="@+id/tv_stoptime1"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="15dp"
+        android:text="12:35 pm"
+        android:textColor="@color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_stopname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="5dp"
+        android:text="TextView"
+        android:textColor="@color/white"
+        android:maxLength="15"
+        android:textSize="12sp" />
+
+</RelativeLayout>
