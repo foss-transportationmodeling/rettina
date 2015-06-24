@@ -1,0 +1,112 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent" >
+
+    <FrameLayout
+        android:id="@+id/main_fragmentgroup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@android:id/tabhost" >
+
+        <com.sothree.slidinguppanel.SlidingUpPanelLayout
+            xmlns:sothree="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/sliding_layout_tile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            sothree:umanoPanelHeight="0dp"
+            sothree:umanoShadowHeight="4dp" >
+
+            <RelativeLayout
+                android:id="@+id/fragment_group_tile"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" >
+
+                <fragment
+                    android:id="@+id/map_tile"
+                    android:name="com.google.android.gms.maps.MapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scrollbars="vertical" >
+                </fragment>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/navigation_group_tile"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/dark_blue"
+                android:orientation="vertical" >
+
+                <GridView
+                    android:id="@+id/gridView1"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:columnWidth="100dp"
+                    android:gravity="center"
+                    android:numColumns="auto_fit"
+                    android:stretchMode="columnWidth" >
+                </GridView>
+            </RelativeLayout>
+        </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+        </FrameLayout>
+
+        <TabHost
+            android:id="@android:id/tabhost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" >
+
+                <TabWidget
+                    android:id="@android:id/tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/gray" >
+                </TabWidget>
+
+                <FrameLayout
+                    android:id="@android:id/tabcontent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" >
+
+                    <RelativeLayout
+                        android:id="@+id/tab1_tile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical" >
+                    </RelativeLayout>
+
+                    <LinearLayout
+                        android:id="@+id/tab2_tile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical" >
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/tab3_tile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical" >
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/tab4_tile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:visibility="invisible" >
+                    </LinearLayout>
+                </FrameLayout>
+            </LinearLayout>
+        </TabHost>
+    
+
+</RelativeLayout>

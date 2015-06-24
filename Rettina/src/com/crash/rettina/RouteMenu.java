@@ -1,3 +1,21 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * RotueMenu makes up the left fragment and is tied to the MainActivity Class. It uses a regular listview adapter to draw
+ * the route listview.  A Tabhost is used to toggle between "Favorites" and "Routes" listviews.  The "Favorites" listview
+ * uses the CustomAdapter class in order to draw the listview....
+ */
+
+/*
+ * To Do
+ * 1. Lots of bugs when selecting and removing routes
+ */
+
 package com.crash.rettina;
 
 import java.util.ArrayList;
@@ -105,16 +123,25 @@ public class RouteMenu extends Fragment {
 		         else{
 		         Route clickedRoute = (Route)a.routes.get(arg2 - 1);
 				
-				 //String selectedRoute = data;
+				 // If the clickedRoute is not already in the favorites, then get the stops and add it to the "favorites"
+		         if(!selectedFavs.contains(clickedRoute)){
+
 		         
-		         if(clickedRoute.getStops().size() == 0){
+		        	 if(clickedRoute.getStops().size() == 0){
 						System.out.println("Getting Stops");
 						a.getStops(clickedRoute);
-					}
+		        	 }
 		         
 				 				 	
-//				 selectedFavs.add(Integer.toString(clickedRoute.getRouteID()));
+//				 selectedFavs.add(Integer.toString(clickedRoute.getRouteID()));     
 		         selectedFavs.add(clickedRoute);
+		         
+		         }
+		         
+		         // Else the route is already in the favorites so report the error!
+		         else{
+		        	 System.out.println(clickedRoute.getRouteTitle() + " Already in Favorites!");
+		         }
 		         
 		         
 		         
@@ -145,11 +172,17 @@ public class RouteMenu extends Fragment {
 	}
 	
 	public void drawRoute(Route r){
+		// Will draw the route if it has more than 0 points
 		a.drawRoute(r);
+		
 	}
 	
 	public void hideRoute(Route r){
 		a.hideRoute(r);
+	}
+	
+	public void showRoute(Route r){
+		a.showRoute(r);
 	}
 	
 	public void showStops(Route r){

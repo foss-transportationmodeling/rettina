@@ -1,4 +1,5 @@
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -49,21 +50,13 @@
                 android:layout_height="match_parent"
                 android:scrollbars="vertical" >
             </fragment>
-
-            <!-- <TextView -->
-            <!-- android:id="@+id/tv" -->
-            <!-- android:layout_width="match_parent" -->
-            <!-- android:layout_height="match_parent" -->
-            <!-- android:text="Red" -->
-            <!-- android:textColor="@android:color/white" -->
-            <!-- android:textSize="16sp" /> -->
-
         </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/navigation_group"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/dark_blue"
             android:orientation="vertical" >
 
             <TextView
@@ -134,6 +127,29 @@
                 android:textSize="16sp" />
 
             <ImageButton
+                android:id="@+id/imgbtn_previousStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/tv_nextstop_name"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="5dp"
+                android:background="@android:color/transparent"
+                android:scaleX="-1"
+                android:src="@drawable/rightarrow" />
+
+            <ImageButton
+                android:id="@+id/imgbtn_nextStop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/tv_nextstop_name"
+                android:layout_marginRight="25dp"
+                android:layout_marginTop="5dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/rightarrow" />
+
+            <ImageButton
                 android:id="@+id/imgbtn_close"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -144,13 +160,84 @@
                 android:src="@drawable/remove" />
 
             <Button
-                android:id="@+id/imgbtn_share"
+                android:id="@+id/btn_share"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_nextstop_name"
+                android:layout_below="@+id/imgbtn_previousStop"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="20dp"
+                android:background="@color/dark_blue"
                 android:text="Share" />
+
+            <TextView
+                android:id="@+id/tv_rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/btn_share"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:text="Bus Driver Rating"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+
+            <RatingBar
+                android:id="@+id/ratingbar_driver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_rating"
+                android:layout_marginLeft="30dp" />
+
+            <TextView
+                android:id="@+id/tv_capacity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/ratingbar_driver"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="30dp"
+                android:text="Seats Available"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+
+            <RatingBar
+                android:id="@+id/ratingbar_space"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_capacity"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="20dp" />
+
+            <RadioGroup
+                android:id="@+id/radio_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/ratingbar_space" >
+
+                <RadioButton
+                    android:id="@+id/radio_network"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Network" />
+
+                <RadioButton
+                    android:id="@+id/radio_gps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GPS" />
+            </RadioGroup>
+
+            <Spinner
+                android:id="@+id/spinner1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/ratingbar_space"
+                android:layout_marginLeft="40dp"
+                android:layout_marginTop="30dp"
+                android:layout_toRightOf="@+id/radio_location"
+                android:entries="@array/location_times"
+                android:prompt="@string/location_prompt" />
         </RelativeLayout>
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

@@ -14,9 +14,16 @@
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
+
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-            <item name="android:windowActionBarOverlay">true</item>
-        
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="capacityRatingBar" parent="@android:style/Widget.RatingBar">
+        <item name="android:progressDrawable">@drawable/capacity_ratingbar_full</item>
+        <item name="android:minHeight">32dip</item>
+        <item name="android:maxHeight">32dip</item>
+
     </style>
 
 </resources>

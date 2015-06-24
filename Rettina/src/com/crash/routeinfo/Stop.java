@@ -1,3 +1,15 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * Stop acts as a data that holds all the necessary information for each stop such as stop description, ID, latLng, etc.  Routes are
+ * composed of Stops. 
+ */
+
 package com.crash.routeinfo;
 
 import java.util.ArrayList;

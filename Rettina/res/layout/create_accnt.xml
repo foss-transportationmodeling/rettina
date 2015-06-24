@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_blue" >
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="22dp"
+        android:src="@drawable/rettina_logo_blue" />
+
+    <ImageButton
+        android:id="@+id/imgbtn_ok_Create"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/password_Create"
+        android:layout_marginBottom="15dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/arrow" />
+
+    <EditText
+        android:id="@+id/userName_Create"
+        android:layout_width="260dp"
+        android:layout_height="55dp"
+        android:layout_alignBottom="@+id/imageView1"
+        android:layout_alignLeft="@+id/imageView1"
+        android:background="@drawable/dotted_txt"
+        android:ems="10"
+        android:fontFamily="sans-serif-regular"
+        android:gravity="bottom"
+        android:hint="USERNAME"
+        android:inputType="textCapCharacters"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:textSize="31sp" />
+
+    <EditText
+        android:id="@+id/password_Create"
+        android:layout_width="260dp"
+        android:layout_height="55dp"
+        android:layout_alignLeft="@+id/imageView1"
+        android:layout_below="@+id/imageView1"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/dotted_txt"
+        android:ems="10"
+        android:fontFamily="sans-serif-regular"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:singleLine="true"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:textSize="31sp" />
+
+    <EditText
+        android:id="@+id/passwordConfirmation"
+        android:layout_width="260dp"
+        android:layout_height="55dp"
+        android:layout_alignLeft="@+id/password_Create"
+        android:layout_below="@+id/password_Create"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/dotted_txt"
+        android:ems="10"
+        android:fontFamily="sans-serif-regular"
+        android:hint="Confirm Password"
+        android:inputType="textPassword"
+        android:singleLine="true"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        android:textSize="31sp" />
+
+</RelativeLayout>

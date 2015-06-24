@@ -1,9 +1,35 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * MainActivity is the class that pieces everything together. It functions on the use of fragments.  The base fragment is a GoogleMap
+ * That the user will extract the majority of their information.  There are also two fragments on both sides of the screen that are toggled
+ * Via imagebuttons in the top left and top right corners.  The left and right fragments are based on a drawerlayout which allows for,
+ * Sliding and hiding the left and right fragments.  The only one of the left/right fragments may be toggled on the screen at a time.  If
+ * One fragment is already toggled, the other fragment will automatically 'detoggle.' The left fragment is composed of two listviews, "routes" and "favorites".
+ * "routes" is used to show all the possible routes that fall within the GPS coordinates of the top-left and bottom-right corners of the screen. The "routes" listview 
+ * is populated once the user presses the find routes button that overlays the GoogleMap in the bottom right corner. The find routes button is responsible for finding 
+ * the GPS Coordinates of the top left and bottom right corners of the screen. The "favorites" listview is used to contain all the routes that the user clicks under the
+ * "Routes" listview.  The app is designed to only show the routes that the user clicks that are currently under the favorites listview. Routes can be toggled as well as
+ * removed from the "Favorites." Whenever routes are toggled under the "Favorites" listview, they will be displayed on the Map fragment. 
+ * 
+ * The right fragment is used to display all the schedule information for all the selected routes.  This is populated with stop names and stop times for each route. In essence,
+ * the right fragment is dependent upon the left fragment, and is updated accordingly as the "favorite" routes are changed.  When a stop is clicked on the right fragment, the map
+ * will automatically zoom to that stop
+ */
+
+// To Do //
+// 1. Search Icon is pixelated!!
+// 2. When drawing multiple routes, if the stops overlap then only draw one marker
+// 3. Crashes when first trying to get the location since user's location is unknown.. After it crashes, then it works
+// 4. Ask the user to enable location services
+// 5. Get the user's location faster.... GPS is very slow so it should default to low accuracy first to get a quick read
+
 package com.crash.rettina;
-
-
-// Make sure when drawing routes if the stops overlap, only draw one stop location
-
-// Search Icon is pixelated!!
 
 
 import java.io.IOException;
@@ -45,6 +71,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.AdapterView;
@@ -54,16 +81,20 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.crash.connection.Connect;
 import com.crash.connection.Connect_Shape;
 import com.crash.connection.Connect_Stops;
 import com.crash.routeinfo.Route;
+import com.crash.routeinfo.Stop;
 import com.google.android.gms.appindexing.AndroidAppUri;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -93,22 +124,31 @@ public class MainActivity extends ActionBarActivity implements
 	private double longitude;
 	private GetJSON json;
 	
+	private int stopPosition;
 	
 	public Connect connect;
 	
 	public Schedule sched;
 	
-	DrawerLayout mDrawerlayout;
-	ViewGroup mDrawerList_Left;
-	ViewGroup mDrawerList_Favorites;
-	ViewGroup mDrawerList_Right;
+	
+	public DrawerLayout mDrawerlayout;
+	public ViewGroup mDrawerList_Left;
+	public ViewGroup mDrawerList_Favorites;
+	public ViewGroup mDrawerList_Right;
 	
     public SlidingUpPanelLayout mLayout;
+    
 
 
 	@SuppressWarnings("deprecation")
 	ActionBarDrawerToggle mDrawerToggle;
-	ImageButton imgLeftMenu, imgFavoriteMenu, imgRightMenu, imgSearchRoutes, imgClose;
+	ImageButton imgLeftMenu, imgFavoriteMenu, imgRightMenu, imgSearchRoutes, imgClose, imgBtn_nextStop, imgBtn_previousStop;
+	
+	Button btnShare;
+	
+	
+	// Create the textviews for creating a new account and resetting password
+	private TextView tv_CreateAccount, tv_ForgotPassword;
 	
 	
 	//EditText et_Search;
@@ -124,7 +164,6 @@ public class MainActivity extends ActionBarActivity implements
 	private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
 	private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
 	private static final String OUT_JSON = "/json";
-
 	private static final String API_KEY = "------your api key here -------";
 	
 
@@ -146,7 +185,7 @@ public class MainActivity extends ActionBarActivity implements
 		main = this;
 	
 		final RouteMenu routeFragment =  (RouteMenu) manager.findFragmentById(R.id.drawer_list_left);
-		 sched =  (Schedule) manager.findFragmentById(R.id.drawer_list_right);
+		sched =  (Schedule) manager.findFragmentById(R.id.drawer_list_right);
 
 		
 		// Remove the compass and the zoom options that come stock on the map
@@ -168,18 +207,20 @@ public class MainActivity extends ActionBarActivity implements
 		imgRightMenu = (ImageButton) findViewById(R.id.imgRightMenu);
 		imgSearchRoutes = (ImageButton) findViewById(R.id.imgBtn_searchRoutes);
 		imgClose = (ImageButton) findViewById(R.id.imgbtn_close);
+		imgBtn_previousStop = (ImageButton) findViewById(R.id.imgbtn_previousStop);
+		imgBtn_nextStop = (ImageButton) findViewById(R.id.imgbtn_nextStop);
 
+		btnShare = (Button) findViewById(R.id.btn_share);
 		
-		
+
 		et_Search = (AutoCompleteTextView) findViewById(R.id.search);
-
+		
 
 
 		mDrawerlayout.setDrawerListener(mDrawerToggle);
 		
 
-		// ============== Define a Custom Header for Navigation
-		// drawer=================//
+		// ============== Define a Custom Header for Navigation drawer================= //
 
 		LayoutInflater inflator = (LayoutInflater) this
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -210,6 +251,8 @@ public class MainActivity extends ActionBarActivity implements
 
 		// Setting the custom Action Bar View
 		getSupportActionBar().setCustomView(v);
+		
+
 		
 		// Handling clicks for the left button on the Action Bar
 		imgLeftMenu.setOnClickListener(new OnClickListener() {
@@ -279,50 +322,153 @@ public class MainActivity extends ActionBarActivity implements
 				});
 				
 				mLayout.setTouchEnabled(false);
-//		        mLayout.setPanelSlideListener(new PanelSlideListener() {
-//
-//		        	@Override
-//		            public void onPanelSlide(View panel, float slideOffset) {
-//		                Log.i(TAG, "onPanelSlide, offset " + slideOffset);
-//		            }
-//
-//		            @Override
-//		            public void onPanelExpanded(View panel) {
-//		                Log.i(TAG, "onPanelExpanded");
-//
-//		            }
-//
-//		            @Override
-//		            public void onPanelCollapsed(View panel) {
-//		                Log.i(TAG, "onPanelCollapsed");
-//
-//		            }
-//
-//		            @Override
-//		            public void onPanelAnchored(View panel) {
-//		                Log.i(TAG, "onPanelAnchored");
-//		            }
-//
-//		            @Override
-//		            public void onPanelHidden(View panel) {
-//		                Log.i(TAG, "onPanelHidden");
-//		            }
-//		        	
-//		        
-//		        });
+		        mLayout.setPanelSlideListener(new PanelSlideListener() {
+
+		        	@Override
+		            public void onPanelSlide(View panel, float slideOffset) {
+		                Log.i(TAG, "onPanelSlide, offset " + slideOffset);
+		                imgSearchRoutes.setVisibility(View.INVISIBLE);
+
+		            }
+
+		            @Override
+		            public void onPanelExpanded(View panel) {
+		                Log.i(TAG, "onPanelExpanded");
+		                imgSearchRoutes.setVisibility(View.INVISIBLE);
+
+		            }
+
+		            @Override
+		            public void onPanelCollapsed(View panel) {
+		                Log.i(TAG, "onPanelCollapsed");
+		                imgSearchRoutes.setVisibility(View.VISIBLE);
+
+
+		            }
+
+		            @Override
+		            public void onPanelAnchored(View panel) {
+		                Log.i(TAG, "onPanelAnchored");
+		                imgSearchRoutes.setVisibility(View.INVISIBLE);
+
+		            }
+
+		            @Override
+		            public void onPanelHidden(View panel) {
+		                Log.i(TAG, "onPanelHidden");
+		                imgSearchRoutes.setVisibility(View.VISIBLE);
+
+		            }
+		        	
 		        
-				mLayout.setAnchorPoint(0.25f);
+		        });
+		        
+				mLayout.setAnchorPoint(0.30f);
 
 				
 				imgClose.setOnClickListener(new OnClickListener() {
 					
 					@Override
 					public void onClick(View v) {
+						
+						setStopPosition(0);
+						
 						mLayout.setPanelState(PanelState.HIDDEN);
+		                imgSearchRoutes.setVisibility(View.VISIBLE);
+
+		                CameraPosition cameraPosition = new CameraPosition.Builder()
+					    .target(routeFragment.adapter.getNavRoute().getStops().get(getStopPosition()).getLatLng())      // Sets the center of the map to Mountain View
+					    .zoom(15)                   // Sets the zoom
+					    .bearing(90)                // Sets the orientation of the camera to east
+					    .tilt(40)                   
+					    .build();                   // Creates a CameraPosition from the builder
+					googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 						
 					}
 				});
+				
+				// Set the listner for the share button
+				btnShare.setOnClickListener(new OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						
+						// If the panel is already expanded, i.e "Sharing Mode" then put the panel back to anchored
+						if(mLayout.getPanelState() == PanelState.EXPANDED){
+							mLayout.setPanelState(PanelState.ANCHORED);
+			                imgSearchRoutes.setVisibility(View.INVISIBLE);
+						}
+						
+						// Else if the panel is not expanded, expand it to allow for user "sharing"
+						else{
+							mLayout.setPanelState(PanelState.EXPANDED);
+				
+							
+			                imgSearchRoutes.setVisibility(View.INVISIBLE);
+						}
+						
 
+					}
+				});
+
+				
+				imgBtn_nextStop.setOnClickListener(new OnClickListener() {
+										
+					@Override
+					public void onClick(View v) {
+						if(stopPosition < routeFragment.adapter.getNavRoute().getStops().size() - 1){
+						incrementStopPosition();
+						
+						CameraPosition cameraPosition = new CameraPosition.Builder()
+					    .target(routeFragment.adapter.getNavRoute().getStops().get(getStopPosition()).getLatLng())      // Sets the center of the map to Mountain View
+					    .zoom(19)                   // Sets the zoom
+					    .bearing(90)                // Sets the orientation of the camera to east
+					    .tilt(80)                   // Sets the tilt of the camera to 30 degrees
+					    .build();                   // Creates a CameraPosition from the builder
+					googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+						
+						
+//						// Zoom out when closing on the navigation tab
+//						  googleMap.animateCamera(CameraUpdateFactory
+//									.newLatLngZoom(routeFragment.adapter.getNavRoute().getStops().get(getStopPosition()).getLatLng(),
+//											16));
+					
+					
+					
+			               routeFragment.adapter.getNavRoute().getStops().get(getStopPosition()).getMarker().showInfoWindow();
+						}
+					}
+				});
+				
+				imgBtn_previousStop.setOnClickListener(new OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						if(stopPosition > 0){
+
+						decrementStopPosition();
+						
+						CameraPosition cameraPosition = new CameraPosition.Builder()
+					    .target(routeFragment.adapter.getNavRoute().getStops().get(getStopPosition()).getLatLng())      // Sets the center of the map to Mountain View
+					    .zoom(19)                   // Sets the zoom
+					    .bearing(90)                // Sets the orientation of the camera to east
+					    .tilt(80)                   // Sets the tilt of the camera to 30 degrees
+					    .build();                   // Creates a CameraPosition from the builder
+					googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+						
+						
+//						// Zoom out when closing on the navigation tab
+//						  googleMap.animateCamera(CameraUpdateFactory
+//									.newLatLngZoom(routeFragment.adapter.getNavRoute().getStops().get(getStopPosition()).getLatLng(),
+//											16));
+					
+					
+					
+			               routeFragment.adapter.getNavRoute().getStops().get(getStopPosition()).getMarker().showInfoWindow();
+						}
+					}
+				});
+				
 
 				
 		 lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -405,13 +551,26 @@ public class MainActivity extends ActionBarActivity implements
 		
 	}
 	
+	
 	public void hideRoute(Route r){
-		r.getPolyLine().setVisible(false);
 		System.out.println("Hiding Route: " + r.getRouteTitle());
+
+		r.getPolyLine().remove();
+		
+		r.getPolyLineOptions().visible(false);
+		System.out.println("IS POLY VISIBLE: " + r.getPolyLine().isVisible());
+		
+		
 
 	}
 	
+	public void showRoute(Route r){
+		r.getPolyLine().setVisible(true);
+		System.out.println("Showing Route: " + r.getRouteTitle());
+
+	}
 	
+
 	public void showStops(Route r){
 		r.showStops(googleMap);
 		
@@ -420,6 +579,11 @@ public class MainActivity extends ActionBarActivity implements
 	public void hideStops(Route r){
 		r.hideStops(googleMap);
 
+	}
+	
+	
+	public Schedule getSched() {
+		return sched;
 	}
 	
 	
@@ -503,8 +667,12 @@ public class MainActivity extends ActionBarActivity implements
 	
 
 	public void getStops(Route r) {
-		Connect_Stops tempConnect = new Connect_Stops(r);
+		System.out.println("Getting the routes!!!!!");
+		
+		Connect_Stops tempConnect = new Connect_Stops(r, main, googleMap);
 		tempConnect.execute();
+		
+		
 	}
 	
 	public void getShape(Route r) {
@@ -513,6 +681,23 @@ public class MainActivity extends ActionBarActivity implements
 		}
 	
 	
+	public int getStopPosition() {
+		return stopPosition;
+	}
+	
+	public void incrementStopPosition() {
+		stopPosition++;
+	}
+
+	public void decrementStopPosition() {
+		stopPosition--;
+	}
+	
+	public void setStopPosition(int stopPosition) {
+		this.stopPosition = stopPosition;
+	}
+	
+
 	class GooglePlacesAutocompleteAdapter extends ArrayAdapter implements Filterable {
 		private ArrayList resultList;
 	
@@ -560,5 +745,6 @@ public class MainActivity extends ActionBarActivity implements
 		return filter;
 	}
 }
+	
 	
 }

@@ -1,3 +1,18 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * Connect_Stops is sued to establish a connect to the database and parse the retrieved JSON data.  This collects all the stops
+ * and stop information for the given route and saves it to the route. This is done by using the getStops() method.  A Route
+ * is a required parameter for this method.  getShape() is used to grab all the polyline information for that specific route passed
+ * in as a parameter, which allows for the route to be drawn on the map.  
+ */
+
+
 package com.crash.connection;
 
 import java.util.ArrayList;
@@ -22,6 +37,7 @@ import com.crash.rettina.RouteMenu;
 import com.crash.rettina.ServiceHandler;
 import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.LatLng;
@@ -36,10 +52,14 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 	private ProgressDialog pDialog;
 	private ArrayList<LatLng> tempPolyPoints = new ArrayList<LatLng>();
 	private Route route;
+	private Context context;
+	private GoogleMap map;
 
-	public Connect_Stops(Route r) {
+	public Connect_Stops(Route r, Context c, GoogleMap m) {
 
 		route = r;
+		context = c;
+		map = m;
 		
 	}
 
@@ -50,10 +70,10 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 	protected void onPreExecute() {
 		super.onPreExecute();
 		// Showing progress dialog
-//		 pDialog = new ProgressDialog(c);
-//		 pDialog.setMessage("Please wait...");
-//		 pDialog.setCancelable(false);
-//		 pDialog.show();
+		 pDialog = new ProgressDialog(context);
+		 pDialog.setMessage("Please wait...");
+		 pDialog.setCancelable(false);
+		 pDialog.show();
 		// getScreenCornerCoordinates();
 
 	}
@@ -62,7 +82,11 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 	protected Void doInBackground(Void... arg0) {
 		// Creating service handler class instance
 		// ServiceHandler sh = new ServiceHandler();
+		
 		getStops(route);
+		//getStops_Test(route);  // <---- Static data call
+		
+		
 		//getShape(route);
 
 
@@ -74,7 +98,11 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 		super.onPostExecute(result);
 		// getScreenCornerCoordinates();
 		// routeMenu.setRouteData();
-		//pDialog.dismiss();
+		route.showStops(map);
+		pDialog.dismiss();
+		
+		// This zooms into the first stops location.. It should zoom so it fits the whole route in but this can be solved later
+		map.moveCamera(CameraUpdateFactory.newLatLngZoom(route.getStops().get(0).getLatLng(), 13));
 
 	}
 
@@ -88,9 +116,60 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 		// based on the
 		// Time of day
 
+//		String sh_Routes = sh.makeServiceCall(
+//				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),
+//				ServiceHandler.GET);
+		
+		
+		// Need to make it so it actually gets the real tripID and calls it
 		String sh_Routes = sh.makeServiceCall(
-				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),
+				"http://137.99.15.144/stops/UConn?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
 				ServiceHandler.GET);
+		
+		if (sh_Routes != null) {
+			try {
+				JSONObject jsonObj = new JSONObject(sh_Routes);
+				JSONArray jsonArray = jsonObj.getJSONArray("stops");
+
+				// looping through All Contacts
+				for (int i = 0; i < jsonArray.length(); i++) {
+
+					JSONObject tempObj = jsonArray.getJSONObject(i);
+
+					LatLng lat_lng = new LatLng(Double.parseDouble(tempObj.get(
+							"stop_lat").toString()), Double.parseDouble(tempObj
+							.get("stop_lon").toString()));
+					Stop tempStop = new Stop(
+							r.getRouteID(),
+							Integer.parseInt(tempObj.get("stop_id").toString()),
+							(tempObj.get("stop_name").toString()), lat_lng);
+
+					r.addStop(tempStop);
+				}
+				
+				System.out.println("ROUTE: " + r.getRouteTitle() +  ", SIZE OF STOPS: " + r.getStops().size());
+
+				// System.out.println("First Stop: " +
+				// r.getStops().get(0).getStopDescription());
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Log.e("ServiceHandler", "Couldn't get any data from the url");
+		}
+
+	}
+	
+	// FOR USE ONLY WHEN TESTING DATA OR WHEN THE SERVER IS DOWN AND STATIC DATA MUST BE USED
+	public void getStops_Test(Route r) {
+		ServiceHandler sh = new ServiceHandler();
+
+		String sh_Routes = sh.makeServiceCall(
+				"http://137.99.15.144/static/stops.json",
+				ServiceHandler.GET);
+		
+		
 		if (sh_Routes != null) {
 			try {
 				JSONObject jsonObj = new JSONObject(sh_Routes);
@@ -123,6 +202,8 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 		}
 
 	}
+	
+	
 
 	public void getShape(Route r) {
 		ServiceHandler sh = new ServiceHandler();

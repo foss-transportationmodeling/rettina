@@ -60,24 +60,26 @@
         android:textColorHint="@color/white"
         android:textSize="33sp" />
 
-    <ImageButton
-        android:id="@+id/imgbtn_fb"
+    <TextView
+        android:id="@+id/tv_forgotpassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/password"
-        android:layout_below="@+id/password"
-        android:layout_marginTop="41dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/facbook_icon_white" />
-
-    <ImageButton
-        android:id="@+id/imageButton1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/imageView1"
-        android:layout_below="@+id/imgbtn_fb"
+        android:layout_alignLeft="@+id/tv_createaccount"
+        android:layout_alignTop="@+id/skip"
         android:layout_marginTop="7dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/google_plus_logo" />
+        android:fontFamily="sans-serif-regular"
+        android:text="Forgot Password"
+        android:textColor="@color/white" />
+
+    <TextView
+        android:id="@+id/tv_createaccount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tv_forgotpassword"
+        android:layout_alignLeft="@+id/password"
+        android:layout_marginBottom="11dp"
+        android:fontFamily="sans-serif-regular"
+        android:text="Create Account"
+        android:textColor="@color/white" />
 
 </RelativeLayout>

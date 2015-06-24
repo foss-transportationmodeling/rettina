@@ -1,3 +1,5 @@
+
+
 package com.crash.connection;
 
 import java.util.ArrayList;
@@ -17,12 +19,15 @@ import android.text.format.Time;
 import android.util.Log;
 
 import com.crash.rettina.MainActivity;
+import com.crash.rettina.Main_Tile;
 import com.crash.rettina.RouteMenu;
 import com.crash.rettina.ServiceHandler;
 import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -36,12 +41,22 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 		Route route;
 		private ArrayList<LatLng> tempPolyPoints = new ArrayList<LatLng>();
 		Context context;
+		MainActivity ma;
+		
+		Main_Tile mainTile;
 		GoogleMap map;
 
 
 		public Connect_Shape( Route r, GoogleMap googleMap, Context c) {
 			route = r;
 			context = c;
+			
+			// Commented out... This works with MainActivity
+			// ma = (MainActivity) c;
+			
+			// This works for the Tile UI
+			mainTile = (Main_Tile) c;
+			
 			map = googleMap;
 		}
 	
@@ -65,7 +80,9 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 		protected Void doInBackground(Void... arg0) {
 			// Creating service handler class instance
 			//ServiceHandler sh = new ServiceHandler();
+			
 			getShape(route);
+			//getShape_Test(route);
 
 		return null;
 		}
@@ -74,11 +91,37 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 			//getScreenCornerCoordinates();
-			
-			
-			route.setPolyLine(map.addPolyline(route.getPolyLineOptions()));
+
+			// If the route's polylineOptions is not null, then set the polyline
+			if(route.getPolyLineOptions() != null){
+				System.out.println("Setting the polyline");
+
+				route.setPolyLine(map.addPolyline(route.getPolyLineOptions()));
+			}
 
 			pDialog.dismiss();
+			
+			
+			// Trying to handle drawing on the map and updating the schedule from here.. Not sure if it will work!
+			//ma.drawRoute(route);
+			// Still not showing
+			if(route.getPolyLine() != null){
+				
+				// Commented out since it works with the MainActivity design
+			//ma.showRoute(route);
+			
+				System.out.println("Showing the polyline");
+				mainTile.showRoute(route);
+			
+			}
+			
+			// Used for MainActivity UI
+			//ma.showStops(route);		
+			//ma.getSched().setRoutes(route);
+
+			if(route.isNavMode() == true){
+				navMode(route);
+			}
 
 			}
 			
@@ -94,11 +137,20 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 			
 			// For some reason Blue Line and probably some others only have a couple stops in some of there trips..
 			// Using arrayLocation 5 for temporary in order to get all the stops since location 0 doesn't have them all...
+			
+			// Error: When trying to get the meriden data... Error 500 on Trevor's behalf
+//			String sh_Routes = sh.makeServiceCall(
+//					"http://137.99.15.144/shapes?trip_id=" + r.getTripIDs().get(5),
+//					ServiceHandler.GET);
+			
 			String sh_Routes = sh.makeServiceCall(
-					"http://137.99.15.144/shapes?trip_id=" + r.getTripIDs().get(5),
+					"http://137.99.15.144/shapes/UConn?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
 					ServiceHandler.GET);
 			
-			System.out.println("http://137.99.15.144/shapes?trip_id=" + r.getTripIDs().get(5));
+			System.out.println("http://137.99.15.144/shapes/UConn?trip_id=" + r.getTripIDs().get(5));
+			
+			
+			
 			if (sh_Routes != null) {
 				try {
 					JSONObject jsonObj = new JSONObject(sh_Routes);
@@ -121,7 +173,7 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 					
 					
 
-					//System.out.println("First Stop: " + r.getStops().get(0).getStopDescription());
+					System.out.println("Size of polyline " + tempPolyPoints.size());
 					
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -131,6 +183,67 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 				Log.e("ServiceHandler", "Couldn't get any data from the url");
 			}
 
+		}
+		
+		
+		// For Testing or when the server is down only!
+		public void getShape_Test(Route r) {
+			ServiceHandler sh = new ServiceHandler();
+			
+			String sh_Routes = sh.makeServiceCall(
+					"http://137.99.15.144/static/shapes.json",
+					ServiceHandler.GET);
+			
+			
+			
+			
+			if (sh_Routes != null) {
+				try {
+					JSONObject jsonObj = new JSONObject(sh_Routes);
+					JSONArray jsonArray = jsonObj.getJSONArray("shapes");
+
+					
+					// looping through All Contacts
+					for (int i = 0; i < jsonArray.length(); i++) {
+						
+						JSONObject tempObj = jsonArray.getJSONObject(i);
+						
+						LatLng tempLatLng = new LatLng(Double.parseDouble(tempObj.get("shape_pt_lat").toString()), Double.parseDouble(tempObj.get("shape_pt_lon").toString()));
+						
+						tempPolyPoints.add(tempLatLng);
+					    	  
+					}
+					
+					r.setPolyLineOptions(drawPrimaryLinePath(tempPolyPoints, r.getColor()));					
+					
+					
+
+					System.out.println("PolyLineOptions Size: " + tempPolyPoints.size());
+					
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			} 
+			else {
+				Log.e("ServiceHandler", "Couldn't get any data from the url");
+			}
+
+			
+		}
+		
+		
+		public void navMode(Route r){
+			// Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+			CameraPosition cameraPosition = new CameraPosition.Builder()
+			    .target(r.getStops().get(0).getLatLng())      // Sets the center of the map to Mountain View
+			    .zoom(19)                   // Sets the zoom
+			    .bearing(90)                // Sets the orientation of the camera to east
+			    .tilt(80)                   // Sets the tilt of the camera to 30 degrees
+			    .build();                   // Creates a CameraPosition from the builder
+			ma.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+			
+			//Null Pointer here
+			 r.getStops().get(0).getMarker().showInfoWindow();
 		}
 	
 

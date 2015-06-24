@@ -3,8 +3,8 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="@color/dark_blue"
-    android:paddingBottom="13dp"
-    android:paddingTop="13dp" >
+    android:paddingBottom="15dp"
+    android:paddingTop="15dp" >
 
     <TextView
         android:id="@+id/tv_stoptime1"
@@ -15,6 +15,7 @@
         android:layout_alignRight="@+id/tv_stoptime2"
         android:layout_marginRight="65dp"
         android:text="12:00 pm"
+        android:maxLength="35"
         android:textColor="@color/white"
         android:textSize="12sp" />
 
@@ -35,11 +36,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
+        android:layout_alignParentTop="true"
         android:layout_marginLeft="5dp"
-        android:text="TextView"
-        android:textColor="@color/white"
         android:maxLength="15"
+        android:text=""
+        android:textColor="@color/white"
         android:textSize="12sp" />
 
 </RelativeLayout>

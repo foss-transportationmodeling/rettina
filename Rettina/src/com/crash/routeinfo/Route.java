@@ -1,3 +1,16 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * Route is used as a data type to handle all Routes.  It contains all the necessary information to draw the route on the map and
+ * hold all the stops
+ */
+
+
 package com.crash.routeinfo;
 
 import java.util.ArrayList;
@@ -16,15 +29,17 @@ public class Route {
 	private String routeTitle;
 	private ArrayList<Stop> stops = new ArrayList<Stop>();
 	private int color;
+	private int sched_StartPos, sched_EndPos;
 	
 	public ArrayList<LatLng> routePoints = new ArrayList<LatLng>();
 
 	private PolylineOptions polyLine;
 	private Polyline pl;
 	private ArrayList<Marker> markers = new ArrayList<Marker>();
-	
-	
 	private ArrayList<Integer> tripIDs = new ArrayList<Integer>();
+	
+	private boolean clicked = false;
+	private boolean navMode = false;
 
 	// Need to add a tripID field since everything is based off of the tripID now...
 
@@ -99,10 +114,10 @@ public class Route {
 	
 	public void printRoute() {
 		//System.out.println("Route ID: " + RouteID);
-		//System.out.println("Stops: ");
+		System.out.println("Stops: ");
 
 		for(int i = 0; i < stops.size(); i++){
-			//System.out.println(stops.get(i).getStopDescription());
+			System.out.println(stops.get(i).getStopDescription());
 		}
 		
 	}
@@ -158,7 +173,7 @@ public class Route {
 	
 	public void setColor(String color) {
 		
-		this.color = Color.parseColor(color);
+		this.color = Color.parseColor("#"+color);
 	}
 
 
@@ -174,6 +189,65 @@ public class Route {
 
 	public void addTripID(int tripID) {
 		this.tripIDs.add(tripID);
+	}
+
+
+	public boolean isClicked() {
+		return clicked;
+	}
+
+
+	public void setClicked(boolean clicked) {
+		this.clicked = clicked;
+	}
+	
+	public void hidePolyLine(){
+		
+		System.out.println("Hiding Route: " + getRouteTitle());
+
+		//pl.remove();
+		pl.setVisible(false);
+
+		
+		//polyLine.visible(false);
+		System.out.println("IS POLY VISIBLE: " + polyLine.isVisible());
+		
+		
+		//pl.remove();
+	}
+	
+	public void showPolyLine(){
+		pl.setVisible(true);
+	}
+
+
+	public boolean isNavMode() {
+		return navMode;
+	}
+
+
+	public void setNavMode(boolean navMode) {
+		this.navMode = navMode;
+	}
+
+
+	public int getSched_StartPos() {
+		return sched_StartPos;
+	}
+
+
+	public void setSched_StartPos(int sched_StartPos) {
+		this.sched_StartPos = sched_StartPos;
+	}
+
+
+	public int getSched_EndPos() {
+		return sched_EndPos;
+	}
+
+
+	public void setSched_EndPos(int sched_EndPos) {
+		this.sched_EndPos = sched_EndPos;
 	}
 }
 
