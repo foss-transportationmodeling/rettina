@@ -124,10 +124,12 @@ public class Sharing extends Fragment {
 				main_tile.collectUsersLocation(ping);
 
 				
-					FragmentTransaction ft = main_tile.manager
-							.beginTransaction();
-					ft.remove(sharing);
-					ft.commit();
+//					FragmentTransaction ft = main_tile.manager
+//							.beginTransaction();
+//					ft.remove(sharing);
+//					ft.commit();
+				
+				main_tile.removeSharing();
 					
 					main_tile.tabhost.setCurrentTab(3);		
 				

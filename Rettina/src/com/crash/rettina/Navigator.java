@@ -1,5 +1,6 @@
 package com.crash.rettina;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,13 +12,13 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import com.crash.customlist.MyListAdapter;
 import com.crash.routeinfo.Route;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
 
+@SuppressLint("Instantiatable")
 public class Navigator extends Fragment {
 
 	  MyListAdapter adapter;
@@ -78,6 +79,11 @@ public class Navigator extends Fragment {
 			    .tilt(40)                   
 			    .build();                   // Creates a CameraPosition from the builder
 			main_tile.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+			
+			// When the 'X' is clicked to close Navigation, it will prompt Main_Tile to make a POST request to the server containing
+			// A bundle of the user's location data
+			main_tile.exitNavigation();
+			
 			}
 		});
 	    

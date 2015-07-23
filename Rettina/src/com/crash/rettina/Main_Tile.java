@@ -1,8 +1,15 @@
 package com.crash.rettina;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.crash.connection.Connect;
+import com.crash.connection.Connect_LocationInfo;
 import com.crash.connection.Connect_Shape;
 import com.crash.connection.Connect_Stops;
 import com.crash.rettina.R.drawable;
@@ -14,9 +21,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
 import android.location.LocationListener;
-
-
 import android.R.fraction;
 import android.annotation.SuppressLint;
 import android.app.ActionBar.LayoutParams;
@@ -30,7 +36,9 @@ import android.location.Criteria;
 import android.location.Location;
 //import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -86,6 +94,8 @@ public class Main_Tile extends Activity implements LocationListener {
 	public FragmentTransaction ft;
 	
 	public ArrayList<Location> locationHolder = new ArrayList<Location>();
+	public ArrayList<String> locationTimeStamps = new ArrayList<String>();
+
 
 	Main_Tile main;
 
@@ -466,7 +476,13 @@ public class Main_Tile extends Activity implements LocationListener {
 		// Add to the user's location tracker
 		if(trackUser == true){
 		locationHolder.add(location);
+		
+		SimpleDateFormat localDateFormat = new SimpleDateFormat("MMM dd yyyy hh:mm:ssa");
+		
+		locationTimeStamps.add(localDateFormat.format(new Date()));
+		
 		System.out.println("Saving location, locationHolder size: " + locationHolder.size());
+		System.out.println(localDateFormat.format(new Date()));
 		}
 
 	}
@@ -616,7 +632,13 @@ public class Main_Tile extends Activity implements LocationListener {
 	public void removeSharing() {
 		ft = manager.beginTransaction();
 		ft.remove(fragment_Sharing);
+		
+		ft.add(R.id.main_fragmentgroup, fragment_Navigator);
+		ft.addToBackStack("Navigator");
+		
 		ft.commit();
+		
+		
 	}
 
 	public float getPingTime_Selection() {
@@ -640,11 +662,9 @@ public class Main_Tile extends Activity implements LocationListener {
 		trackUser = true; // User has agreed to have their location tracked and stored
 		
 		Criteria criteria = new Criteria();
-		criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-		String provider = lm.NETWORK_PROVIDER;
+		criteria.setAccuracy(Criteria.ACCURACY_FINE);
+		String provider = lm.getBestProvider(criteria, true);
 
-				
-				//lm.getBestProvider(criteria, true);
 		
 		lm.removeUpdates(this);
 		
@@ -662,9 +682,77 @@ public class Main_Tile extends Activity implements LocationListener {
 	// Location on the trip can be sent in a final bundle... This is responsible for sending a bundle of location information
 	public void exitNavigation(){
 		
+		JSONObject outerJSONObj = new JSONObject(); 					// Outer JSON container
+		JSONArray locations = new JSONArray();							// Inner JSON Array
+		
+		for(int i = 0; i < locationHolder.size(); i++){					// Add a JSON Obj to each element of the JSON Array
+			JSONObject tempObj = new JSONObject();
+			try {
+				tempObj.put("x", locationHolder.get(i).getLatitude());
+				tempObj.put("y", locationHolder.get(i).getLongitude());
+				tempObj.put("timestamp", locationTimeStamps.get(i));
+				tempObj.put("location_technology", getDeviceName());
+				
+				locations.put(i, tempObj);
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// Using this temporary Trip_ID until I sort out getting the correct trip_ID from Navigator
+		try {			
+			outerJSONObj.put("trip_id", clickedRoute.getTripIDs().get(0));	// Add the Trip_ID and Locations Array to the outer JSON Obj
+			outerJSONObj.put("locations", locations);
+			
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Printing JSON!");
+
+		for(int i = 0; i < locations.length(); i++){					// Add a JSON Obj to each element of the JSON Array
+			try {
+				System.out.println(locations.getJSONObject(i).get("x"));
+				System.out.println(locations.getJSONObject(i).get("y"));
+				System.out.println(locations.getJSONObject(i).get("timestamp"));
+				System.out.println(locations.getJSONObject(i).get("location_technology"));
+
+
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		Connect_LocationInfo connectLocation = new Connect_LocationInfo(main, main, outerJSONObj);
+		connectLocation.execute();
+		
+		// Stop tracking the user once the user has exited navigation
+		trackUser = false;
 	}
 	
-	
-	
+	public String getDeviceName() {
+	    String manufacturer = Build.MANUFACTURER;
+	    String model = Build.MODEL;
+	    if (model.startsWith(manufacturer)) {
+	        return capitalize(model);
+	    } else {
+	        return capitalize(manufacturer) + " " + model;
+	    }
+	}
+
+
+	private String capitalize(String s) {
+	    if (s == null || s.length() == 0) {
+	        return "";
+	    }
+	    char first = s.charAt(0);
+	    if (Character.isUpperCase(first)) {
+	        return s;
+	    } else {
+	        return Character.toUpperCase(first) + s.substring(1);
+	    }
+	} 
 
 }

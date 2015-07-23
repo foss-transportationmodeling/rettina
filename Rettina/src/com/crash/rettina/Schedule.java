@@ -19,7 +19,7 @@
 package com.crash.rettina;
 
 import java.util.ArrayList;
-
+import android.annotation.SuppressLint;
 import android.app.ActionBar.LayoutParams;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -39,7 +39,6 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.VerticalSeekBar;
-
 import com.crash.customlist.MyListAdapter;
 import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
@@ -68,6 +67,7 @@ public class Schedule extends Fragment {
 	private static final int UNBOUNDED = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
 
+	@SuppressLint("Instantiatable")
 	public Schedule(Main_Tile mt) {
 		main_Tile = mt;
 	}
