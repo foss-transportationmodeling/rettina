@@ -43,6 +43,8 @@ public class MyListAdapter extends BaseAdapter {
 	private static LayoutInflater inflater = null;
 	private Activity activity;
 	
+//	public ArrayList<Integer> dots = new ArrayList<Integer>();
+	
 	
 	public Stop tempValue;
 	private String routeTitle;
@@ -63,8 +65,8 @@ public class MyListAdapter extends BaseAdapter {
 		/*********** Layout inflator to call external xml layout () ***********/
 		inflater = (LayoutInflater) activity
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		tempValue = null;
-
+		tempValue = null;	
+		
 	}
 
 	public ArrayList<Stop> getData() {
@@ -77,11 +79,11 @@ public class MyListAdapter extends BaseAdapter {
 		// routeHolder
 		if (!routeHolder.contains(r)) {
 
-			System.out.println("Adding Route: " + r.getRouteTitle());
+			System.out.println("Adding Route: ");
 
 			routeHolder.add(r);
 
-			// Sets the starting position for the stops on the Schedule listview
+//			 Sets the starting position for the stops on the Schedule listview
 			r.setSched_StartPos(mData.size());
 			
 			routeTitles.add(mData.size()); // Used so the custom adapter can set the correct route title when displaying the stops
@@ -90,8 +92,8 @@ public class MyListAdapter extends BaseAdapter {
 			// for the start of the list of stops
 			// that appear under the route title, it must be added as a Stop
 			// first
-			mData.add(mData.size(), new Stop(r.getRouteID(), r.getStops()
-					.get(0).getStopID(), r.getRouteTitle(), null));
+//			mData.add(mData.size(), new Stop(r.getRouteID(), r.getStops()
+//					.get(0).getStopID(), r.getRouteTitle(), null));
 
 			mData.addAll(r.getStops());
 
@@ -175,8 +177,8 @@ public class MyListAdapter extends BaseAdapter {
 		holder = new ViewHolder();
 
 		holder.tv_stopName = (TextView) vi.findViewById(R.id.tv_stopname);
-		holder.tv_stopTime = (TextView) vi.findViewById(R.id.tv_stoptime1);
-		holder.tv_stopTime2 = (TextView) vi.findViewById(R.id.tv_stoptime2);
+		holder.tv_stopTime = (TextView) vi.findViewById(R.id.tv_stoptime2);
+		holder.tv_stopTime2 = (TextView) vi.findViewById(R.id.tv_stoptime1);
 
 		/************ Set holder with LayoutInflater ************/
 		vi.setTag(holder);
@@ -196,14 +198,24 @@ public class MyListAdapter extends BaseAdapter {
 		else {
 
 			tempValue = (Stop) mData.get(position);
+			
+//			dots.add((int)vi.getY());
 
 			/************ Set Model values in Holder elements ***********/
 
-			// for (int i = 0; i < routeTitles.size(); i++) {
-			//
-			//
-			// if (position == routeTitles.get(i)) {
-			if (routeTitles.contains(position)) {
+//			 for (int i = 0; i < routeTitles.size(); i++) {
+//			
+//			
+//			 if (position == routeTitles.get(i)) {
+//			if (routeTitles.contains(position)) {
+			
+			if(position == 0){
+				holder.tv_stopName.setText(mData.get(position)
+						.getStopDescription());
+				holder.tv_stopTime.setText("");
+				holder.tv_stopTime2.setText("");
+			}
+			else{
 
 				//
 				//
@@ -211,31 +223,33 @@ public class MyListAdapter extends BaseAdapter {
 				System.out.println("Setting Route Title: "
 						+ mData.get(position).getStopDescription());
 				//
-				holder.tv_stopTime.setText("");
-				holder.tv_stopTime.setText(mData.get(position)
-						.getStopDescription());
+//				holder.tv_stopTime.setText("");
+//				holder.tv_stopTime.setText(mData.get(position)
+//						.getStopDescription());
 				// holder.tv_stopTime.setTextSize(15);
 				// holder.tv_stopTime.setFilters( new InputFilter[] { new
 				// InputFilter.LengthFilter(10) }
 
-				holder.tv_stopTime.setTextColor(holder.tv_stopTime
-						.getResources().getColor(R.color.gray));
+//				holder.tv_stopTime.setTextColor(holder.tv_stopTime
+//						.getResources().getColor(R.color.gray));
 
-				holder.tv_stopName.setText("");
-				holder.tv_stopTime2.setText("");
-				//
+				holder.tv_stopName.setText(mData.get(position)
+						.getStopDescription());
+//				
 			}
+				
+	//		}
 			//
-			else {
-				System.out.println("Position: " + position + ", Stop: "
-						+ tempValue.getStopDescription());
-
-				holder.tv_stopName.setText(tempValue.getStopDescription());
-				// }
-				// }
-
-			}
-		}
+//			else {
+//			
+//				System.out.println("Position: " + position + ", Stop: "
+//						+ tempValue.getStopDescription());
+//
+//
+//
+//			}
+	//	}
+			 }
 
 		vi.setOnClickListener(new OnClickListener() {
 
@@ -271,9 +285,9 @@ public class MyListAdapter extends BaseAdapter {
 			}
 		});
 		//routeTitles.add(mData.size());
-
+		
 		return vi;
-
+		
 	}
 
 	public void removeStops(ArrayList<Stop> tempStops, Route r) {
@@ -290,5 +304,6 @@ public class MyListAdapter extends BaseAdapter {
 		numberOfRoutes--;
 		sizeHolder = mData.size();
 	}
+
 
 }

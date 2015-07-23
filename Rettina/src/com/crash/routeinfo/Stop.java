@@ -20,8 +20,8 @@ import com.google.android.gms.maps.model.Marker;
 public class Stop {
 	
 	// Setting up the variables that this class will use
-	private int routeID;
-	private int stopID;
+	private String routeID;
+	private String stopID;
 	private String stopDescription;
 	private LatLng latLng;
 	private ArrayList<LatLng> routePoints = new ArrayList<LatLng>();
@@ -31,7 +31,7 @@ public class Stop {
 	
 	private Marker marker;
 	
-	public Stop(int _routeID, int _stopID, String _stopDescription, LatLng _latLng){
+	public Stop(String _routeID, String _stopID, String _stopDescription, LatLng _latLng){
 		routeID = _routeID;
 		stopID = _stopID;
 		stopDescription = _stopDescription;
@@ -39,22 +39,22 @@ public class Stop {
 	}
 
 	
-	public int getRouteID() {
+	public String getRouteID() {
 		return routeID;
 	}
 
 	
-	public void setRouteID(int routeID) {
+	public void setRouteID(String routeID) {
 		this.routeID = routeID;
 	}
 
 	
-	public int getStopID() {
+	public String getStopID() {
 		return stopID;
 	}
 
 	
-	public void setStopID(int stopID) {
+	public void setStopID(String stopID) {
 		this.stopID = stopID;
 	}
 

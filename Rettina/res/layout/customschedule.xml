@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/dark_blue" >
+
+        <ListView
+            android:id="@+id/lv_stopnames"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignBottom="@+id/seekbar"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="0dp"
+            android:divider="@null"
+            android:dividerHeight="0dp" >
+        </ListView>
+
+        <android.widget.VerticalSeekBar
+            android:id="@+id/seekbar"
+            android:layout_width="wrap_content"
+            android:layout_height="800dp"
+            android:layout_centerHorizontal="true"
+            android:progress="30"
+            android:layout_marginTop="30dp" >
+        </android.widget.VerticalSeekBar>
+
+        <!-- <TextView -->
+        <!-- android:id="@+id/tv_value" -->
+        <!-- android:layout_width="wrap_content" -->
+        <!-- android:layout_height="wrap_content" -->
+        <!-- android:layout_alignParentTop="true" -->
+        <!-- android:layout_marginLeft="5dp" -->
+        <!-- android:layout_marginTop="10dp" -->
+        <!-- android:text="Route Title" -->
+        <!-- android:textColor="@color/white" > -->
+        <!-- </TextView> -->
+
+
+        <!-- <ListView -->
+        <!-- android:id="@+id/lv_stoptimes" -->
+        <!-- android:layout_width="match_parent" -->
+        <!-- android:layout_height="wrap_content" -->
+        <!-- android:layout_alignBottom="@+id/seekbar" -->
+        <!-- android:layout_alignParentRight="true" -->
+        <!-- android:layout_alignTop="@+id/seekbar" -->
+        <!-- android:layout_toRightOf="@+id/seekbar" -->
+        <!-- android:divider="@null" -->
+        <!-- android:dividerHeight="0dp" > -->
+        <!-- </ListView> -->
+
+    </RelativeLayout>
+
+</ScrollView>

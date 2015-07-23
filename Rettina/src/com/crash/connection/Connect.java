@@ -71,7 +71,11 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 	private Context c;
 	private GoogleMap map;
 
+	private String sh_Routes;
+	
 	private ArrayList<LatLng> tempPolyPoints = new ArrayList<LatLng>();
+
+	private ServiceHandler sh;
 
 	public Connect(MainActivity a, GoogleMap m, RouteMenu rm) {
 		this.activity = a;
@@ -102,7 +106,7 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 		// pDialog.setMessage("Please wait...");
 		// pDialog.setCancelable(false);
 		// pDialog.show();
-		getScreenCornerCoordinates();
+//		getScreenCornerCoordinates();
 
 	}
 
@@ -136,51 +140,51 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 
 	}
 
-	public void getStops(Route r) {
-		ServiceHandler sh = new ServiceHandler();
-
-		// Making the connection to grab all the stops based on the TripID...
-		// Temporary: Right now I am just using the first element of the TripID
-		// ArrayList
-		// But this will change when the user will specify which trip they want
-		// based on the
-		// Time of day
-
-		String sh_Routes = sh.makeServiceCall(
-				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),
-				ServiceHandler.GET);
-		if (sh_Routes != null) {
-			try {
-				JSONObject jsonObj = new JSONObject(sh_Routes);
-				JSONArray jsonArray = jsonObj.getJSONArray("stops");
-
-				// looping through All Contacts
-				for (int i = 0; i < jsonArray.length(); i++) {
-
-					JSONObject tempObj = jsonArray.getJSONObject(i);
-
-					LatLng lat_lng = new LatLng(Double.parseDouble(tempObj.get(
-							"stop_lat").toString()), Double.parseDouble(tempObj
-							.get("stop_lon").toString()));
-					Stop tempStop = new Stop(
-							r.getRouteID(),
-							Integer.parseInt(tempObj.get("stop_id").toString()),
-							(tempObj.get("stop_name").toString()), lat_lng);
-
-					r.addStop(tempStop);
-				}
-
-				// System.out.println("First Stop: " +
-				// r.getStops().get(0).getStopDescription());
-
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		} else {
-			Log.e("ServiceHandler", "Couldn't get any data from the url");
-		}
-
-	}
+//	public void getStops(Route r) {
+//		ServiceHandler sh = new ServiceHandler();
+//
+//		// Making the connection to grab all the stops based on the TripID...
+//		// Temporary: Right now I am just using the first element of the TripID
+//		// ArrayList
+//		// But this will change when the user will specify which trip they want
+//		// based on the
+//		// Time of day
+//
+//		String sh_Routes = sh.makeServiceCall(
+//				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),
+//				ServiceHandler.GET);
+//		if (sh_Routes != null) {
+//			try {
+//				JSONObject jsonObj = new JSONObject(sh_Routes);
+//				JSONArray jsonArray = jsonObj.getJSONArray("stops");
+//
+//				// looping through All Contacts
+//				for (int i = 0; i < jsonArray.length(); i++) {
+//
+//					JSONObject tempObj = jsonArray.getJSONObject(i);
+//
+//					LatLng lat_lng = new LatLng(Double.parseDouble(tempObj.get(
+//							"stop_lat").toString()), Double.parseDouble(tempObj
+//							.get("stop_lon").toString()));
+//					Stop tempStop = new Stop(
+//							r.getRouteID(),
+//							Integer.parseInt(tempObj.get("stop_id").toString()),
+//							(tempObj.get("stop_name").toString()), lat_lng);
+//
+//					r.addStop(tempStop);
+//				}
+//
+//				// System.out.println("First Stop: " +
+//				// r.getStops().get(0).getStopDescription());
+//
+//			} catch (JSONException e) {
+//				e.printStackTrace();
+//			}
+//		} else {
+//			Log.e("ServiceHandler", "Couldn't get any data from the url");
+//		}
+//
+//	}
 
 	public void getShape(Route r) {
 		ServiceHandler sh = new ServiceHandler();
@@ -238,11 +242,11 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 
 	public void getRoutes() {
 
-		System.out.println("http://137.99.15.144/routes?lat1=" + north
-				+ "&lat2=" + south + "&lon1=" + east + "&lon2=" + west
-				+ "&time=9:00:00");
+//		System.out.println("http://137.99.15.144/routes?lat1=" + activity_tile.north
+//				+ "&lat2=" + activity_tile.south + "&lon1=" + activity_tile.east + "&lon2=" + activity_tile.west
+//				+ "&time=9:00:00");
 
-		ServiceHandler sh = new ServiceHandler();
+//		ServiceHandler sh = new ServiceHandler();
 
 		// String sh_Routes = sh.makeServiceCall(
 		// "http://137.99.15.144/routes?lat1=" + north + "&lat2=" + south
@@ -252,17 +256,32 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 		// Using this call instead of filling in the GPS parameters because I
 		// could not get any routes to show up
 		// When inputting the Lat/Long/Time
+	
+		String t1 = "00:00:00";
+		String t2 = "23:59:00";
 		
 		
 		
-//		String sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes",
+		// Changed it so I do the service call from this method... This is so the long closest to 0 can be placed last which should
+		// Fix the get routes problem
+//		getScreenCornerCoordinates();
+		
+		
+		
+//		String sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.east +"&lat2=" + activity_tile.west + 
+//				"&lon1=" + activity_tile.north + "&lon2=" + activity_tile.south + "&start=" + t1 + "&stop=" + t2 + "&next=" + "8",
 //				ServiceHandler.GET);
 		
-		String sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes/UConn",  // This is the new api call... Using Meriden for now
-				ServiceHandler.GET);
+		
+		getScreenCornerCoordinates();
+		
+//		String sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes",  // This is the new api call... Using Meriden for now
+//				ServiceHandler.GET);
+		
 
 		if (sh_Routes != null) {
 			try {
+				System.out.println("In here");
 				// JSONArray jsonArray = new JSONArray(sh_Routes);
 				JSONObject jsonObj = new JSONObject(sh_Routes);
 				JSONArray jsonArray = jsonObj.getJSONArray("routes");
@@ -285,8 +304,11 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 					// System.out.println("TripID's: " +
 					// tempObj.getJSONArray("trip_ids"));
 
-					Route tempRoute = new Route(Integer.parseInt(tempObj.get(
-							"route_id").toString()));
+//					Route tempRoute = new Route(Integer.parseInt(tempObj.get(
+//							"route_id").toString()));
+					
+					Route tempRoute = new Route(tempObj.get(
+							"route_id").toString());
 
 					tempRoute.setRouteTitle(tempObj.get("route_long_name")
 							.toString());
@@ -303,21 +325,18 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 
 					// Goes through all the already found routes, checking to see if the current "new" route is actually a duplicate
 					// If it is a duplicate, it sets the boolean to true and will not add the route
-					
-					// Commented out so I can use the Tile UI
-//					for (int z = 0; z < activity.routes.size(); z++) {
-//						if (tempRoute.getRouteID() == activity.routes.get(z)
-//								.getRouteID()) {
-//							duplicateRoute = true;
-//						}
-//
-//					}
+
 					
 					
-					// For the Tile UI
+					// Need to make the duplicate route check for each route if it is a duplicate... And only add ones
+					// That are not the duplicate... This is important because the user may shift the camera a little
+					// To add in a few more routes but the rest would be duplicates
+					
+					
+					// Checks the new Temporary route against all the existing routes to see if it is a duplicate route
 					for (int z = 0; z < activity_tile.routes.size(); z++) {
-						if (tempRoute.getRouteID() == activity_tile.routes.get(z)
-								.getRouteID()) {
+						if (tempRoute.getRouteID().equals(activity_tile.routes.get(z)
+								.getRouteID())) {
 							duplicateRoute = true;
 						}
 
@@ -343,24 +362,9 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 						for (int z = 0; z < tempObj.getJSONArray("trip_ids")
 								.length(); z++) {
 
-							tempRoute.addTripID(Integer
-									.parseInt(tempObj.getJSONArray("trip_ids")
-											.get(z).toString()));
+							tempRoute.addTripID(tempObj.getJSONArray("trip_ids")
+											.get(z).toString());
 						}
-
-						// This may be a temporary call depending on the
-						// performance
-						// we achieve... This will get all the stops
-						// For each route even though we do not need the stop
-						// information until that route has been selected
-						// and moved to the favorites section....
-
-						// These calls are too expensive, this is doing a
-						// connection
-						// on every single route
-
-						// getStops(tempRoute);
-						// getShape(tempRoute);
 
 
 						// Commented out so Tile UI can work
@@ -373,8 +377,9 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 //								+ activity.routes.size());
 
 					} 
-					// Route was a dupicate so report the error
+					// Route was a duplicate so report the error
 					else {
+						
 						System.out.println("This is a duplicate Route!!!!");
 					}
 
@@ -405,8 +410,8 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 
 					JSONObject tempObj = jsonArray.getJSONObject(i);
 
-					Route tempRoute = new Route(Integer.parseInt(tempObj.get(
-							"route_id").toString()));
+					Route tempRoute = new Route(tempObj.get(
+							"route_id").toString());
 
 					tempRoute.setRouteTitle(tempObj.get("route_long_name")
 							.toString());
@@ -450,9 +455,9 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 						for (int z = 0; z < tempObj.getJSONArray("trip_ids")
 								.length(); z++) {
 
-							tempRoute.addTripID(Integer
-									.parseInt(tempObj.getJSONArray("trip_ids")
-											.get(z).toString()));
+							tempRoute.addTripID(
+									tempObj.getJSONArray("trip_ids")
+											.get(z).toString());
 						}
 
 						// This may be a temporary call depending on the
@@ -516,18 +521,40 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 	// southwest coordinates of the screen
 	// When viewing the GoogleMap
 	public void getScreenCornerCoordinates() {
-		LatLngBounds llBounds = map.getProjection().getVisibleRegion().latLngBounds;
-		southWest = llBounds.southwest;
-		northEast = llBounds.northeast;
+		
+//		LatLngBounds llBounds = map.getProjection().getVisibleRegion().latLngBounds;
+//		southWest = llBounds.southwest;
+//		northEast = llBounds.northeast;
+//
+//		north = northEast.latitude;
+//		south = southWest.latitude;
+//		east = northEast.longitude;
+//		west = southWest.longitude;
+//
+//		System.out.println("NorthEast: " + northEast + " SouthWest: "
+//				+ southWest);
+//		
+		sh = new ServiceHandler();
 
-		north = northEast.latitude;
-		south = southWest.latitude;
-		east = northEast.longitude;
-		west = southWest.longitude;
+		
+		// Need to make it so the second longitude is the one that is closest to 0
+		if(Math.abs(east) > Math.abs(west)){
+			System.out.println("first one");
+			sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.north +"&lat2=" + activity_tile.south + 
+			"&lon1=" + activity_tile.east + "&lon2=" + activity_tile.west,
+			ServiceHandler.GET);
+		}
+		else{
+			System.out.println("second one");
 
-		System.out.println("NorthEast: " + northEast + " SouthWest: "
-				+ southWest);
+			sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.south +"&lat2=" + activity_tile.north + 
+			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east,
+			ServiceHandler.GET);
+		}
 
+
+		System.out.println("http://137.99.15.144/routes?lat1="+activity_tile.south +"&lat2=" + activity_tile.north + 
+			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east);
 	}
 
 	// public void setStopMarkers(){

@@ -15,6 +15,8 @@
 
 package com.crash.connection;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -119,18 +121,50 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 //		String sh_Routes = sh.makeServiceCall(
 //				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),
 //				ServiceHandler.GET);
+//		System.out.println("http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5));
 		
+		String sh_Routes = null;
+
+
 		
 		// Need to make it so it actually gets the real tripID and calls it
-		String sh_Routes = sh.makeServiceCall(
-				"http://137.99.15.144/stops/UConn?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
-				ServiceHandler.GET);
+//		String sh_Routes = sh.makeServiceCall(
+//				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
+//				ServiceHandler.GET);
+		
+		try {
+			String query = URLEncoder.encode(r.getTripIDs().get(0), "utf-8");
+			String url = "http://137.99.15.144/stops?trip_id=" + query;
+
+			System.out.println("URL IS: " + url);
+
+			
+			sh_Routes = sh.makeServiceCall(
+					url,	// New API call, using Meriden
+					ServiceHandler.GET);
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+//		String sh_Routes = sh.makeServiceCall(
+//				
+//				
+//				
+//				
+//				"http://137.99.15.144/stops?trip_id=6%20UConn%20Transportation%20Service",	// New API call, using Meriden
+//				ServiceHandler.GET);
+		
+		
 		
 		if (sh_Routes != null) {
 			try {
 				JSONObject jsonObj = new JSONObject(sh_Routes);
 				JSONArray jsonArray = jsonObj.getJSONArray("stops");
 
+				System.out.println("Length of Stops: " + jsonArray.length());
+
+				
 				// looping through All Contacts
 				for (int i = 0; i < jsonArray.length(); i++) {
 
@@ -139,9 +173,16 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 					LatLng lat_lng = new LatLng(Double.parseDouble(tempObj.get(
 							"stop_lat").toString()), Double.parseDouble(tempObj
 							.get("stop_lon").toString()));
+					
+					
+//					Stop tempStop = new Stop(
+//							r.getRouteID(),
+//							Integer.parseInt(tempObj.get("stop_id").toString()),
+//							(tempObj.get("stop_name").toString()), lat_lng);
+					
 					Stop tempStop = new Stop(
 							r.getRouteID(),
-							Integer.parseInt(tempObj.get("stop_id").toString()),
+							tempObj.get("stop_id").toString(),
 							(tempObj.get("stop_name").toString()), lat_lng);
 
 					r.addStop(tempStop);
@@ -185,7 +226,7 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 							.get("stop_lon").toString()));
 					Stop tempStop = new Stop(
 							r.getRouteID(),
-							Integer.parseInt(tempObj.get("stop_id").toString()),
+							tempObj.get("stop_id").toString(),
 							(tempObj.get("stop_name").toString()), lat_lng);
 
 					r.addStop(tempStop);

@@ -25,7 +25,10 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 public class Route {
-	private int RouteID;
+//	private int RouteID;
+	
+	private String RouteID;
+	
 	private String routeTitle;
 	private ArrayList<Stop> stops = new ArrayList<Stop>();
 	private int color;
@@ -36,7 +39,7 @@ public class Route {
 	private PolylineOptions polyLine;
 	private Polyline pl;
 	private ArrayList<Marker> markers = new ArrayList<Marker>();
-	private ArrayList<Integer> tripIDs = new ArrayList<Integer>();
+	private ArrayList<String> tripIDs = new ArrayList<String>();
 	
 	private boolean clicked = false;
 	private boolean navMode = false;
@@ -44,17 +47,17 @@ public class Route {
 	// Need to add a tripID field since everything is based off of the tripID now...
 
 
-	public Route(int id){
+	public Route(String id){
 		RouteID = id;
 	}
 	
 	
-	public Route(int id, ArrayList<Stop> pts){
+	public Route(String id, ArrayList<Stop> pts){
 		RouteID = id;
 		stops = pts;
 	}
 	
-	public Route(int id, Stop pts){
+	public Route(String id, Stop pts){
 		RouteID = id;
 		stops.add(pts);
 	}
@@ -72,11 +75,11 @@ public class Route {
 		pl = p;
 	}
 	
-	public int getRouteID() {
+	public String getRouteID() {
 		return RouteID;
 	}
 
-	public void setRouteID(int routeID) {
+	public void setRouteID(String routeID) {
 		RouteID = routeID;
 	}
 
@@ -177,17 +180,17 @@ public class Route {
 	}
 
 
-	public ArrayList<Integer> getTripIDs() {
+	public ArrayList<String> getTripIDs() {
 		return tripIDs;
 	}
 
 
-	public void setTripIDs(ArrayList<Integer> tripIDs) {
+	public void setTripIDs(ArrayList<String> tripIDs) {
 		this.tripIDs = tripIDs;
 	}
 	
 
-	public void addTripID(int tripID) {
+	public void addTripID(String tripID) {
 		this.tripIDs.add(tripID);
 	}
 

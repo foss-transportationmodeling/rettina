@@ -2,6 +2,8 @@
 
 package com.crash.connection;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,6 +23,7 @@ import android.util.Log;
 import com.crash.rettina.MainActivity;
 import com.crash.rettina.Main_Tile;
 import com.crash.rettina.RouteMenu;
+import com.crash.rettina.Schedule;
 import com.crash.rettina.ServiceHandler;
 import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
@@ -42,12 +45,13 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 		private ArrayList<LatLng> tempPolyPoints = new ArrayList<LatLng>();
 		Context context;
 		MainActivity ma;
-		
+	//	Schedule sched;
 		Main_Tile mainTile;
 		GoogleMap map;
+		public Schedule sched;
 
 
-		public Connect_Shape( Route r, GoogleMap googleMap, Context c) {
+		public Connect_Shape(Route r, GoogleMap googleMap, Context c) {
 			route = r;
 			context = c;
 			
@@ -56,8 +60,8 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 			
 			// This works for the Tile UI
 			mainTile = (Main_Tile) c;
-			
 			map = googleMap;
+			sched = mainTile.fragment_Schedule;
 		}
 	
 		/*
@@ -97,6 +101,10 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 				System.out.println("Setting the polyline");
 
 				route.setPolyLine(map.addPolyline(route.getPolyLineOptions()));
+				
+				// Setting the schedule for this route... May need to change this up a little bit so when the route has already
+				// Found all the stops and is clicked again, skip the connect_shape call and just use the information for that route
+
 			}
 
 			pDialog.dismiss();
@@ -107,17 +115,19 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 			// Still not showing
 			if(route.getPolyLine() != null){
 				
-				// Commented out since it works with the MainActivity design
-			//ma.showRoute(route);
 			
 				System.out.println("Showing the polyline");
 				mainTile.showRoute(route);
-			
+				
+				// Seeing if this fixes the schedule problem
+				
 			}
 			
 			// Used for MainActivity UI
 			//ma.showStops(route);		
 			//ma.getSched().setRoutes(route);
+			
+			// Setting the schedule
 
 			if(route.isNavMode() == true){
 				navMode(route);
@@ -143,11 +153,33 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 //					"http://137.99.15.144/shapes?trip_id=" + r.getTripIDs().get(5),
 //					ServiceHandler.GET);
 			
-			String sh_Routes = sh.makeServiceCall(
-					"http://137.99.15.144/shapes/UConn?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
-					ServiceHandler.GET);
 			
-			System.out.println("http://137.99.15.144/shapes/UConn?trip_id=" + r.getTripIDs().get(5));
+//			System.out.println("http://137.99.15.144/shapes/UConn?trip_id=" + r.getTripIDs().get(5));
+
+			
+			String sh_Routes = null;
+
+			// Need to make it so it actually gets the real tripID and calls it
+//			String sh_Routes = sh.makeServiceCall(
+//					"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
+//					ServiceHandler.GET);
+			
+			try {
+				String query = URLEncoder.encode(r.getTripIDs().get(0), "utf-8");
+				String url = "http://137.99.15.144/shapes?trip_id=" + query;
+
+				sh_Routes = sh.makeServiceCall(
+						url,	// New API call, using Meriden
+						ServiceHandler.GET);
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+//			String sh_Routes = sh.makeServiceCall(
+//					"http://137.99.15.144/stops?trip_id=6%20UConn%20Transportation%20Service",
+//					ServiceHandler.GET);
+			
 			
 			
 			

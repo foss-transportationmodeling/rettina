@@ -22,8 +22,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:maxLength="18"
         android:layout_marginLeft="10dp"
+        android:maxLength="18"
         android:text="TextView"
         android:textColor="@color/white" />
 
@@ -32,6 +32,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_alignTop="@+id/imgbtn_removeroute"
+        android:layout_marginRight="5dp"
         android:layout_toLeftOf="@+id/imgbtn_removeroute"
         android:background="@android:color/transparent"
         android:src="@drawable/locmarker" />
@@ -41,6 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/cb_showroute"
+        android:layout_marginRight="5dp"
         android:layout_toLeftOf="@+id/imgbtn_followroute"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_action_menu" />
@@ -50,6 +52,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_alignBottom="@+id/imgbtn_removeroute"
+        android:layout_marginRight="5dp"
         android:layout_toLeftOf="@+id/imgbtn_schedule"
         android:clickable="false" />
 

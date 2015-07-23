@@ -11,22 +11,24 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
+import android.location.LocationListener;
 
+
+import android.R.fraction;
 import android.annotation.SuppressLint;
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
+//import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,12 +51,12 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class Main_Tile extends Activity implements LocationListener{
+public class Main_Tile extends Activity implements LocationListener {
 
 	public GoogleMap googleMap;
-	public SlidingUpPanelLayout mLayout;
 	private Location location;
 	private LocationManager lm;
+		
 	private Marker myMarker;
 	public LatLng lat_Lng;
 	private double latitude;
@@ -63,22 +65,44 @@ public class Main_Tile extends Activity implements LocationListener{
 	public ArrayList<Route> routes = new ArrayList<Route>();
 
 	public ArrayList<String> routeTitles = new ArrayList<String>();
-	
-	
+
+	public ImageButton imgbtn_SchedulePopup;
+
 	public TabHost tabhost;
 
 	public Connect connect;
 	public GridView gridview;
 	public ArrayAdapter<String> adapter;
-	
+
 	public Favorites fragment_Favorites;
 	public Schedule fragment_Schedule;
 
+	public Navigator fragment_Navigator;
+	public Sharing fragment_Sharing;
+	public RoutesFragment fragment_Routes;
+
 	public FragmentManager manager;
 
-	Main_Tile main;
+	public FragmentTransaction ft;
 	
-	private Route clickedRoute = null;
+	public ArrayList<Location> locationHolder = new ArrayList<Location>();
+
+	Main_Tile main;
+
+	public Route clickedRoute = null;
+	private LatLng northEast;
+	private LatLng southWest;
+	public double south;
+	public double east;
+	public double north;
+	public double west;
+	
+	// These two variables are used to collect 'Sharing' data from the user. Since Sharing is another fragment
+	// These variables are stored on the Main_Tile activity to allow for easy location transfer since this activity is always running
+	private float pingTime_Selection;
+	private String locationProvider_Selection;
+	
+	private boolean trackUser = false;
 
 	private static final String TAG = "Test";
 
@@ -91,14 +115,21 @@ public class Main_Tile extends Activity implements LocationListener{
 
 		final MapFragment fm = (MapFragment) manager
 				.findFragmentById(R.id.map_tile);
-		
-		fragment_Favorites = new Favorites();
-		fragment_Schedule = new Schedule();
 
+		fragment_Favorites = new Favorites();
+		
+//		Intent gpsOptionsIntent = new Intent(  
+//			    android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);  
+//			startActivity(gpsOptionsIntent);
 
 		googleMap = fm.getMap();
 
 		main = this;
+
+		fragment_Schedule = new Schedule(main);
+		fragment_Navigator = new Navigator(main);
+		fragment_Sharing = new Sharing(main);
+		fragment_Routes = new RoutesFragment(main);
 
 		// Remove the compass and the zoom options that come stock on the map
 		googleMap.getUiSettings().setZoomControlsEnabled(false);
@@ -111,6 +142,7 @@ public class Main_Tile extends Activity implements LocationListener{
 
 		gridview = (GridView) findViewById(R.id.gridView1);
 
+		imgbtn_SchedulePopup = (ImageButton) findViewById(R.id.imgbtn_schedulepopup);
 
 		tabhost.setup();
 		TabSpec ts = tabhost.newTabSpec("tag1");
@@ -134,143 +166,43 @@ public class Main_Tile extends Activity implements LocationListener{
 		ts.setContent(R.id.tab4_tile);
 		ts.setIndicator("Hide");
 		tabhost.addTab(ts);
-		
-		
+
 		tabhost.getTabWidget().getChildAt(3).setVisibility(View.GONE);
 
 		tabhost.setCurrentTab(3);
-		
-
-		mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout_tile);
-
-		mLayout.setTouchEnabled(false);
-		mLayout.setPanelSlideListener(new PanelSlideListener() {
-
-			@Override
-			public void onPanelSlide(View panel, float slideOffset) {
-				Log.i(TAG, "onPanelSlide, offset " + slideOffset);
-				// imgSearchRoutes.setVisibility(View.INVISIBLE);
-
-			}
-
-			@Override
-			public void onPanelExpanded(View panel) {
-				Log.i(TAG, "onPanelExpanded");
-				// imgSearchRoutes.setVisibility(View.INVISIBLE);
-
-			}
-
-			@Override
-			public void onPanelCollapsed(View panel) {
-				Log.i(TAG, "onPanelCollapsed");
-				// imgSearchRoutes.setVisibility(View.VISIBLE);
-
-			}
-
-			@Override
-			public void onPanelAnchored(View panel) {
-				Log.i(TAG, "onPanelAnchored");
-				// imgSearchRoutes.setVisibility(View.INVISIBLE);
-
-			}
-
-			@Override
-			public void onPanelHidden(View panel) {
-				Log.i(TAG, "onPanelHidden");
-				// imgSearchRoutes.setVisibility(View.VISIBLE);
-
-			}
-
-		});
-
-		mLayout.setAnchorPoint(0.30f);
-	
 
 		adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, routeTitles);
 
-		gridview.setAdapter(adapter);
+		imgbtn_SchedulePopup.setOnClickListener(new OnClickListener() {
 
-		// When a tile is clicked, show the route preview and stops
-		gridview.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View v,
-					int position, long id) {
-				
-				// If the favorites does not already contain this route, then add to the favorites
-				if(!fragment_Favorites.selectedFavs.contains(routes.get(position))){
-				
-				if(routes.get(position).getStops().size() < 1){
-					getStops(routes.get(position));
-				}
-				
-				
-				// Work on hiding the polyline when another item is clicked!!!
-				for(int i = 0; i < routes.size(); i++){
-					if(routes.get(i).getStops() != null){
-					routes.get(i).hideStops(googleMap);
-					
-						if(routes.get(i).getPolyLine() != null){
-							routes.get(i).hidePolyLine();
-						}
-					}
-				}
-				
-				showStops(routes.get(position)); // Might error out since it will be waiting to get the stops from the previous call first
-				getShape(routes.get(position));
-				
-				// This loops through all the selected favorites and sets them to unclicked
-				// The last added route will be the only clicked route when going to favorites.. If the user wants to display
-				// More routes on the map, they will have to go through the favorites and click that way
-				for(int i = 0; i < fragment_Favorites.selectedFavs.size(); i++){
-					fragment_Favorites.selectedFavs.get(i).setClicked(false);
-				}
-				
-				routes.get(position).setClicked(true);
-				clickedRoute = routes.get(position);
-				fragment_Favorites.selectedFavs.add(clickedRoute);
-				
-			}
-				else{
-					System.out.println("Route is already in favorites!");
-				}
-			}
-		});
-		
-		// When a tile is held, add the route to the favorites
-		gridview.setOnItemLongClickListener(new OnItemLongClickListener() {
-
-			// Need to make this so it does not interfere with the clicking of a route...
-			// If the route has already been clicked, it should reuse that route information and simply add it to the favorites
 			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View v,
-					int position, long id) {
+			public void onClick(View v) {
 
-				Toast.makeText(getApplicationContext(),
-						((TextView) v).getText(), Toast.LENGTH_SHORT).show();
-				
-				if(routes.get(position).getStops().size() < 1){
-					getStops(routes.get(position));
+				ft = manager.beginTransaction();
+				ft.remove(fragment_Routes);
+				ft.add(R.id.fragment_group_tile, fragment_Schedule);
+				// ft.addToBackStack("Schedule");
+				ft.commit();
+
+				// if(fragment_Schedule.isVisible()){
+				imgbtn_SchedulePopup.setVisibility(View.GONE);
+
+				fragment_Schedule.lv_arr = new String[fragment_Routes.clickedRoute
+						.getStops().size()];
+
+				for (int i = 0; i < fragment_Routes.clickedRoute.getStops()
+						.size(); i++) {
+					fragment_Schedule.lv_arr[i] = fragment_Routes.clickedRoute
+							.getStops().get(i).getStopDescription();
 				}
-				
-				for(int i = 0; i < routes.size(); i++){
-					if(routes.get(i).getStops().size() > 0){
-					routes.get(i).hideStops(googleMap);
-					routes.get(i).hidePolyLine();
 
-					}
-				}
-				
-				showStops(routes.get(position)); // Might error out since it will be waiting to get the stops from the previous call first
-				getShape(routes.get(position));
-				
-				// For now clear the stops so only the last clicked route will be displayed... Will need to change this so
-				// Multiple routes can be supported when Favorites is used
-				fragment_Schedule.stops.clear();
-				
-				fragment_Favorites.selectedFavs.add(routes.get(position));
-				fragment_Schedule.setRoutes(routes.get(position));
+				fragment_Schedule.tempRoute = clickedRoute;
 
-				return false;
+				// fragment_Schedule.seekSetDotPosition(fragment_Schedule.adapter.dots);
+
+				// fragment_Schedule.setRoutes(clickedRoute);
+
 			}
 		});
 
@@ -287,117 +219,232 @@ public class Main_Tile extends Activity implements LocationListener{
 			longitude = mostRecentLocation.getLongitude();
 
 			lat_Lng = new LatLng(latitude, longitude);
-			
+
 			// This zooms into the user's location
-			googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lat_Lng, 13));
+
+			// googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lat_Lng,
+			// 13));
+
+			googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lat_Lng,
+					14));
+
 			userLocMarker(lat_Lng);
 
 		}
-		
-				// This sets an ontouch listener for each of the tabs... This is used to detect when an already focused
-				// Tab is clicked again.  This way, the tab can be unselected and go back to the Map main view
-				for (int i = 0; i < tabhost.getTabWidget().getChildCount(); i++) {
-				    View v = tabhost.getTabWidget().getChildAt(i);
-				    v.setTag(i);
-				}
+
+		// This sets an ontouch listener for each of the tabs... This is used to
+		// detect when an already focused
+		// Tab is clicked again. This way, the tab can be unselected and go back
+		// to the Map main view
+		for (int i = 0; i < tabhost.getTabWidget().getChildCount(); i++) {
+			View v = tabhost.getTabWidget().getChildAt(i);
+			v.setTag(i);
+		}
 
 		lm.requestLocationUpdates(provider, 1, 0, this);
-		
-		tabhost.getTabWidget().getChildAt(0).setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				if(tabhost.getCurrentTab() == 0 && v.getTag().equals(0)){
-					mLayout.setPanelState(PanelState.COLLAPSED);
-					tabhost.setCurrentTab(3);
-					
-					if(clickedRoute != null && clickedRoute.getPolyLine().isVisible()){
-					hideStops(clickedRoute);
-					hideRoute(clickedRoute);
+
+		tabhost.getTabWidget().getChildAt(0)
+				.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						System.out.println("Clicked Search!");
+
+						// Grab the corner of the screens coordinates so the
+						// routes can be found based on GPS coordinates
+						getScreenCornerCoordinates();
+
+						if (tabhost.getCurrentTab() == 0
+								&& fragment_Routes.isVisible()) {
+
+							// Set for the new navigation fragment
+							// mLayout.setPanelState(PanelState.COLLAPSED);
+
+							ft = manager.beginTransaction();
+							ft.remove(fragment_Routes);
+							ft.commit();
+
+							tabhost.setCurrentTab(3);
+
+							if (clickedRoute != null
+									&& clickedRoute.getPolyLine().isVisible()) {
+								// hideStops(clickedRoute);
+								// hideRoute(clickedRoute);
+
+							}
+
+						} else {
+
+							if (fragment_Schedule.isVisible()) {
+								ft = manager.beginTransaction();
+								ft.remove(fragment_Schedule);
+								ft.commit();
+							}
+
+							if (tabhost.getCurrentTab() == 1
+									&& fragment_Favorites.isVisible()) {
+								// Need to make it so it only connects when
+								// unique routes will be shown, otherwise, it
+								// will just be
+								// Doing more work by getting the same routes
+								// over and over whenver search is clicked
+
+								ft = manager.beginTransaction();
+								// ft.replace(R.id.main_fragmentgroup,
+								// (Fragment)fm);
+								ft.remove(fragment_Favorites);
+							}
+
+							// Use for new Nav Fragment
+							// mLayout.setPanelState(PanelState.ANCHORED);
+
+							findViewById(R.id.main_fragmentgroup)
+									.setVisibility(View.VISIBLE);
+
+							ft = manager.beginTransaction();
+
+							if (fragment_Favorites.isAdded()) {
+								ft.remove(fragment_Favorites);
+							}
+
+							else if (fragment_Navigator.isAdded()) {
+								ft.remove(fragment_Navigator);
+							}
+
+//							getScreenCornerCoordinates();
+
+							ft.add(R.id.main_fragmentgroup, fragment_Routes);
+							ft.addToBackStack("Schedule");
+							ft.commit();
+
+							connect = new Connect(main, googleMap);
+							connect.execute();
+							tabhost.setCurrentTab(0);
+
+						}
+
 					}
-				}
-				else{
-					
-					if(tabhost.getCurrentTab() == 1 && fragment_Favorites.isVisible()){
-					// Need to make it so it only connects when unique routes will be shown, otherwise, it will just be
-					// Doing more work by getting the same routes over and over whenver search is clicked
-						
-						FragmentTransaction ft = manager.beginTransaction();
-//						ft.replace(R.id.main_fragmentgroup, (Fragment)fm);
-						ft.remove(fragment_Favorites);
-						ft.commit();
+				});
+
+		tabhost.getTabWidget().getChildAt(1)
+				.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						System.out.println("Clicked Favorites!");
+
+						if (tabhost.getCurrentTab() == 1
+								&& v.getTag().equals(1)) {
+
+							ft = manager.beginTransaction();
+							ft.remove(fragment_Favorites);
+							ft.commit();
+							tabhost.setCurrentTab(3);
+						} else {
+							ft = manager.beginTransaction();
+
+							if (fragment_Schedule.isVisible()) {
+								ft = manager.beginTransaction();
+								ft.remove(fragment_Schedule);
+							}
+
+							if (fragment_Routes.isAdded()) {
+								System.out.println("Routes is aleady added!");
+								ft.remove(fragment_Routes);
+							} else if (fragment_Favorites.isAdded()) {
+								ft.remove(fragment_Favorites);
+							}
+
+							else if (fragment_Navigator.isAdded()) {
+								ft.remove(fragment_Navigator);
+							}
+
+							ft.add(R.id.main_fragmentgroup, fragment_Favorites);
+							ft.addToBackStack("Favorites");
+							ft.commit();
+
+							tabhost.setCurrentTab(1);
+
+						}
+
 					}
-					
-					
-					mLayout.setPanelState(PanelState.ANCHORED);
-					connect = new Connect(main, googleMap);
-					connect.execute();
-					tabhost.setCurrentTab(0);
-				}
-				
-			}
-		});
+				});
 
-	
+		tabhost.getTabWidget().getChildAt(2)
+				.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						System.out.println("Clicked Settings!");
+
+						if (tabhost.getCurrentTab() == 1
+								&& fragment_Favorites.isVisible()) {
+							ft = manager.beginTransaction();
+							ft.remove(fragment_Favorites);
+
+							ft.add(R.id.fragment_group_tile, fragment_Sharing);
+							ft.addToBackStack("Sharing");
+							ft.commit();
+
+							tabhost.setCurrentTab(2);
+						}
+
+						else if (tabhost.getCurrentTab() == 2) {
+
+							// Set for next fragment
+							// mLayout.setPanelState(PanelState.COLLAPSED);
+
+							tabhost.setCurrentTab(3);
+
+							if (fragment_Sharing.isAdded()) {
+								ft = manager.beginTransaction();
+								ft.remove(fragment_Sharing);
+								ft.commit();
+							}
+
+							else if (fragment_Schedule.isAdded()) {
+								ft = manager.beginTransaction();
+								ft.remove(fragment_Schedule);
+								ft.commit();
+							}
+
+						} else {
+							if (fragment_Schedule.isVisible()) {
+								ft = manager.beginTransaction();
+								ft.remove(fragment_Schedule);
+							}
+							// Set for new nav fragment
+							// mLayout.setPanelState(PanelState.COLLAPSED);
+
+							// FragmentTransaction ft =
+							// manager.beginTransaction();
+							// ft.add(R.id.main_fragmentgroup,
+							// fragment_Schedule);
+							// ft.commit();
+
+							ft = manager.beginTransaction();
+
+							if (fragment_Routes.isAdded()) {
+								ft.remove(fragment_Routes);
+							} else if (fragment_Favorites.isAdded()) {
+								ft.remove(fragment_Favorites);
+							}
+
+							else if (fragment_Navigator.isAdded()) {
+								ft.remove(fragment_Navigator);
+							}
+
+							ft.add(R.id.fragment_group_tile, fragment_Sharing);
+							ft.addToBackStack("Sharing");
+							ft.commit();
+							tabhost.setCurrentTab(2);
+
+						}
+
+					}
+				});
 		
-		tabhost.getTabWidget().getChildAt(1).setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				
-				if(tabhost.getCurrentTab() == 1 && v.getTag().equals(1)){
-					mLayout.setPanelState(PanelState.COLLAPSED);
-					FragmentTransaction ft = manager.beginTransaction();
-//					ft.replace(R.id.main_fragmentgroup, (Fragment)fm);
-					ft.remove(fragment_Favorites);
-					ft.commit();
-					tabhost.setCurrentTab(3);
-				}
-				else{
-					FragmentTransaction ft = manager.beginTransaction();
-					ft.add(R.id.main_fragmentgroup, fragment_Favorites);
-					ft.commit();
-					tabhost.setCurrentTab(1);
-
-				}
-				
-			}
-		});
-	
-	
-	tabhost.getTabWidget().getChildAt(2).setOnClickListener(new View.OnClickListener() {
-		
-		@Override
-		public void onClick(View v) {
-			System.out.println("Clicked Settings!");
-			
-			if(tabhost.getCurrentTab() == 1 && fragment_Favorites.isVisible()){
-					FragmentTransaction ft = manager.beginTransaction();
-					ft.remove(fragment_Favorites);
-					ft.commit();
-					
-					tabhost.setCurrentTab(2);
-				}
-			
-			else if(tabhost.getCurrentTab() == 2){
-				mLayout.setPanelState(PanelState.COLLAPSED);
-				tabhost.setCurrentTab(3);
-			}
-			else{
-				mLayout.setPanelState(PanelState.COLLAPSED);
-				FragmentTransaction ft = manager.beginTransaction();
-				ft.add(R.id.main_fragmentgroup, fragment_Schedule);
-				ft.commit();
-				
-				tabhost.setCurrentTab(2);
-
-			}
-			
-		}
-	});
-}
-	
-	
+	}
 
 	// Marks the user's location
 	private void userLocMarker(LatLng lat_lng) {
@@ -414,6 +461,13 @@ public class Main_Tile extends Activity implements LocationListener{
 
 		// googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lat_Lng, 13));
 		myMarker.setPosition(latlng);
+		
+		
+		// Add to the user's location tracker
+		if(trackUser == true){
+		locationHolder.add(location);
+		System.out.println("Saving location, locationHolder size: " + locationHolder.size());
+		}
 
 	}
 
@@ -431,45 +485,43 @@ public class Main_Tile extends Activity implements LocationListener{
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 
 	}
-	
-	public void drawRoute(Route r){
-//		System.out.println("Testing Size: " + r.routePoints.size());
-		r.printRoute();
-		//for(int i = 0; i < r.getPolyLine().getPoints().size(); i++){
-			//System.out.println("PolyPoint: " + r.getPolyLine().getPoints().get(i));
 
-		//}
+	public void drawRoute(Route r) {
+		// System.out.println("Testing Size: " + r.routePoints.size());
+		r.printRoute();
+		// for(int i = 0; i < r.getPolyLine().getPoints().size(); i++){
+		// System.out.println("PolyPoint: " +
+		// r.getPolyLine().getPoints().get(i));
+
+		// }
 		r.setPolyLine(googleMap.addPolyline(r.getPolyLineOptions()));
-		//Polyline pl = googleMap.addPolylineOptions(r.getPolyLine());
-		//googleMap.addPolyline(r.getPolyLine());
-		
+		// Polyline pl = googleMap.addPolylineOptions(r.getPolyLine());
+		// googleMap.addPolyline(r.getPolyLine());
+
 	}
-	
-	
-	public void hideRoute(Route r){
+
+	public void hideRoute(Route r) {
 		System.out.println("Hiding Route: " + r.getRouteTitle());
 
-		//r.getPolyLine().remove();
+		// r.getPolyLine().remove();
 		r.getPolyLine().setVisible(false);
 		r.getPolyLineOptions().visible(false);
 		System.out.println("IS POLY VISIBLE: " + r.getPolyLine().isVisible());
-	
 
 	}
-	
-	public void showRoute(Route r){
+
+	public void showRoute(Route r) {
 		r.getPolyLine().setVisible(true);
 		System.out.println("Showing Route: " + r.getRouteTitle());
 
 	}
-	
 
-	public void showStops(Route r){
+	public void showStops(Route r) {
 		r.showStops(googleMap);
-		
+
 	}
-	
-	public void hideStops(Route r){
+
+	public void hideStops(Route r) {
 		r.hideStops(googleMap);
 
 	}
@@ -480,29 +532,139 @@ public class Main_Tile extends Activity implements LocationListener{
 			for (int i = 0; i < routes.size(); i++) {
 				routeTitles.add(routes.get(i).getRouteTitle());
 			}
-			adapter.notifyDataSetChanged();
-			gridview.setAdapter(adapter);
+			fragment_Routes.adapter.notifyDataSetChanged();
+			fragment_Routes.gridview.setAdapter(adapter);
 		}
 	}
-	
+
 	public void getStops(Route r) {
 		System.out.println("Getting the routes!!!!!");
 		Connect_Stops tempConnect = new Connect_Stops(r, main, googleMap);
 		tempConnect.execute();
 	}
-	
+
 	public void getShape(Route r) {
 		Connect_Shape tempConnect = new Connect_Shape(r, googleMap, main);
-		tempConnect.execute();	
-		}
-	
-	public void hideFavorites(){
-		FragmentTransaction ft = manager.beginTransaction();
-//		ft.replace(R.id.main_fragmentgroup, (Fragment)fm);
+		tempConnect.execute();
+	}
+
+	public void hideFavorites() {
+		ft = manager.beginTransaction();
+		// ft.replace(R.id.main_fragmentgroup, (Fragment)fm);
 		ft.remove(fragment_Favorites);
 		ft.commit();
 		tabhost.setCurrentTab(3);
 
 	}
+
+	public void hideSchedule() {
+		ft = manager.beginTransaction();
+		ft.remove(fragment_Schedule);
+		ft.commit();
+
+	}
+
+	public void showNavigation() {
+		ft = manager.beginTransaction();
+		ft.replace(R.id.main_fragmentgroup, fragment_Navigator);
+		ft.commit();
+
+	}
+
+	public void getScreenCornerCoordinates() {
+
+		LatLngBounds llBounds = googleMap.getProjection().getVisibleRegion().latLngBounds;
+		southWest = llBounds.southwest;
+		northEast = llBounds.northeast;
+
+		north = northEast.latitude;
+		south = southWest.latitude;
+		east = northEast.longitude;
+		west = southWest.longitude;
+
+		System.out.println("NorthEast: " + northEast + " SouthWest: "
+				+ southWest);
+
+	}
+
+	// This method will remove the Navigator Fragment... This is used because I
+	// had trouble getting the fragment to be removed
+	// Inside of the Navigator Class because Navigator is not a Main Activity,
+	// so all fragment removing must be done through Main_Tile
+	public void removeNavigator() {
+		ft = manager.beginTransaction();
+		ft.remove(fragment_Navigator);
+		ft.commit();
+	}
 	
+	/*
+	 * This method will add the Sharing Fragment.. This is used because I
+	 * had trouble getting the fragment to be added
+	 * Inside of the Navigator Class because Navigator is not a Main Activity,
+	 * so all fragment removing must be done through Main_Tile
+	 */
+	public void addSharing() {
+		ft = manager.beginTransaction();
+		ft.add(R.id.fragment_group_tile, fragment_Sharing);
+		ft.addToBackStack("Sharing");
+		ft.commit();
+		
+		tabhost.setCurrentTab(3);
+		imgbtn_SchedulePopup.setVisibility(View.GONE);
+	}
+	
+	public void removeSharing() {
+		ft = manager.beginTransaction();
+		ft.remove(fragment_Sharing);
+		ft.commit();
+	}
+
+	public float getPingTime_Selection() {
+		return pingTime_Selection;
+	}
+
+	public void setPingTime_Selection(float pingTime_Selection) {
+		this.pingTime_Selection = pingTime_Selection;
+	}
+
+	public String getLocationProvider_Selection() {
+		return locationProvider_Selection;
+	}
+
+	public void setLocationProvider_Selection(String locationProvider_Selection) {
+		this.locationProvider_Selection = locationProvider_Selection;
+	}
+	
+	public void collectUsersLocation(long time){
+		System.out.println("Ping time is: " + time);
+		trackUser = true; // User has agreed to have their location tracked and stored
+		
+		Criteria criteria = new Criteria();
+		criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+		String provider = lm.NETWORK_PROVIDER;
+
+				
+				//lm.getBestProvider(criteria, true);
+		
+		lm.removeUpdates(this);
+		
+		// Setting the new location updates based on the user's preference
+		lm.requestLocationUpdates(provider, time, 0, this);
+				
+		if(location != null){
+		onLocationChanged(location);
+		}
+		
+		
+	}
+	
+	// This method is used to alert that the Navigation fragment has been terminated and information such as the user's
+	// Location on the trip can be sent in a final bundle... This is responsible for sending a bundle of location information
+	public void exitNavigation(){
+		
+	}
+	
+	
+	
+
 }

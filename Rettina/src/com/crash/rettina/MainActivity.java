@@ -122,7 +122,6 @@ public class MainActivity extends ActionBarActivity implements
 	public LatLng lat_Lng;
 	private double latitude;
 	private double longitude;
-	private GetJSON json;
 	
 	private int stopPosition;
 	

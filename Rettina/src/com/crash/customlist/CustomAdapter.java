@@ -17,7 +17,6 @@
 
  */
 
-
 package com.crash.customlist;
 
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
@@ -57,7 +57,7 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 	private Activity activity;
 	private ArrayList<Route> data;
 	public RouteMenu routeActivity;
-	
+
 	public Favorites routeActivity_favorites;
 
 	private static LayoutInflater inflater = null;
@@ -66,11 +66,10 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 	CheckBox cb_showRoute;
 	int i = 0;
 	public MainActivity tempA;
-	
-	public Main_Tile maintile_activity;
-	
-	private Route navRoute;
 
+	public Main_Tile maintile_activity;
+
+	private Route navRoute;
 
 	/************* CustomAdapter Constructor *****************/
 	public CustomAdapter(Activity a, ArrayList<Route> d, Resources resLocal,
@@ -88,7 +87,7 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 	}
-	
+
 	// Used for Tile UI
 	/************* CustomAdapter Constructor *****************/
 	public CustomAdapter(Activity a, ArrayList<Route> d, Resources resLocal,
@@ -129,6 +128,8 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 		public CheckBox cb_showRoute;
 		public ImageButton imgbtn_removeRoute;
 		public ImageButton imgbtn_followRoute;
+		public ImageButton imgbtn_schedule;
+
 		public TextView tv_routeName;
 
 	}
@@ -156,6 +157,9 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 			
 			holder.imgbtn_followRoute = (ImageButton) vi
 					.findViewById(R.id.imgbtn_followroute);
+			
+			holder.imgbtn_schedule = (ImageButton) vi
+					.findViewById(R.id.imgbtn_schedule);
 			
 			holder.tv_routeName = (TextView) vi.findViewById(R.id.tv_routename);
 			
@@ -271,6 +275,8 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 						
 						// Used for Tile UI
 						routeActivity_favorites.hideStops(data.get(position));
+						routeActivity_favorites.hideRoute(data.get(position));
+						
 
 						
 						if(data.get(position).isNavMode() == true){
@@ -357,6 +363,8 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 //					routeActivity.hideStops(data.get(position));
 //					routeActivity.hideRoute(data.get(position));
 						
+						maintile_activity.hideRoute(data.get(position));
+
 						
 						// Used for Tile UI
 					routeActivity_favorites.hideStops(data.get(position));
@@ -386,26 +394,21 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 						data.get(position).setClicked(false);
 						
 						
-						// Used for MainActivity UI
-//						if (tempA.mDrawerlayout.isDrawerVisible(tempA.mDrawerList_Left)) {
-//							tempA.mDrawerlayout.closeDrawer(tempA.mDrawerList_Left);
-//						}
-						
-						
+
 						}
 					
-					
-					// Used for MainActivity UI
-//					tempA.sched.removeRoutes(data.get(position));
-					
-					// WILL NEED TO IMPLEMENT THIS FOR THE SCHEDULE IN MAIN_TILE UI WHEN SCHEDULE IS FINALLY IMPLEMENTED!!!
-
-					// Used for MainActivity UI
-					//routeActivity.removeRouteFromFav(data.get(position));
-					
+				
+					// If the Schedule contains the route and the fragment_schedule is already added,
+					// then Remove the route from the schedule fragment
+					if(maintile_activity.fragment_Schedule.isAdded()){
+						if(maintile_activity.fragment_Schedule.adapter.routeHolder.contains(data.get(position))){
+							
+							maintile_activity.fragment_Schedule.removeRoutes(data.get(position));
+						}
+					}
 					// Used for Tile UI
 					routeActivity_favorites.removeRouteFromFav(data.get(position));
-					
+										
 					
 					
 					//MainActivity tempA = (MainActivity) activity;
@@ -484,6 +487,7 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 							
 					        notifyDataSetChanged();
 					        
+
 					        System.out.println("Going to navigation mode!");
 					        
 					        
@@ -516,7 +520,9 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 						 
 						 // Sets the bottom panel to pop up into an achored state which is "Navigation Mode"
 					     // Used for MainActivity UI
-//						 tempA.mLayout.setPanelState(PanelState.ANCHORED);
+							
+						// maintile_activity.mLayout.setPanelState(PanelState.ANCHORED);
+							
 							
 
 						}
@@ -571,13 +577,17 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 					
 					// Used for Tile UI
 					maintile_activity.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
+					
+					
+					maintile_activity.fragment_Navigator.setRoute(data.get(position));
 					
 					//Null Pointer here
 					 data.get(position).getStops().get(0).getMarker().showInfoWindow();
 					 
 					 // Will have to change the panel to a GPS panel.... Possibly use a fragment
-					 maintile_activity.mLayout.setPanelState(PanelState.COLLAPSED);
+//					 maintile_activity.mLayout.setPanelState(PanelState.COLLAPSED);
+					 
+					 
 					 maintile_activity.hideFavorites();
 					 
 					 // Used for MainActivity UI
@@ -589,21 +599,44 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 
 		       // notifyDataSetChanged();
 				}
+					maintile_activity.showNavigation();
 				
 				}
 			
+		});
+	    
+	    holder.imgbtn_schedule.setOnClickListener(new OnClickListener() {
+			
+	    	// May need to reference the main_fragmentgroup somehow if I get an error
+	    	
+			@Override
+			public void onClick(View v) {
+				FragmentTransaction ft = maintile_activity.manager.beginTransaction();
+				
+				ft.remove(routeActivity_favorites);
+				ft.add(R.id.fragment_group_tile, maintile_activity.fragment_Schedule);
+				ft.addToBackStack("Schedule");
+				ft.commit();
+				
+				maintile_activity.fragment_Schedule.lv_arr = new String[maintile_activity.fragment_Routes.clickedRoute.getStops().size()];
+				
+				for(int i = 0; i < maintile_activity.fragment_Routes.clickedRoute.getStops().size(); i++){
+					maintile_activity.fragment_Schedule.lv_arr[i] = maintile_activity.fragment_Routes.clickedRoute.getStops().get(i).getStopDescription();
+				}
+				
+				maintile_activity.fragment_Schedule.tempRoute = maintile_activity.clickedRoute;
+				maintile_activity.imgbtn_SchedulePopup.setVisibility(View.GONE);
+			}
 		});
 
 		return vi;
 		
 	}
 
-
-
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public Route getNavRoute() {
@@ -613,6 +646,5 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 	public void setNavRoute(Route navRoute) {
 		this.navRoute = navRoute;
 	}
-
 
 }

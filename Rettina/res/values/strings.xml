@@ -19,7 +19,7 @@
     <string name="app_name">Rettina</string>
 
     <string name="location_prompt">Location Ping</string>
- 
+     
     <string-array name="location_times">
         <item>5s</item>
         <item>10s</item>

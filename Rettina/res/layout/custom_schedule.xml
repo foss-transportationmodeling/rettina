@@ -7,15 +7,13 @@
     android:paddingTop="15dp" >
 
     <TextView
-        android:id="@+id/tv_stoptime1"
-        android:layout_width="wrap_content"
+        android:id="@+id/tv_stopname"
+        android:layout_width="130dp"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/tv_stopname"
-        android:layout_alignBottom="@+id/tv_stopname"
-        android:layout_alignRight="@+id/tv_stoptime2"
-        android:layout_marginRight="65dp"
-        android:text="12:00 pm"
-        android:maxLength="35"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="15dp"
+        android:inputType="textMultiLine"
         android:textColor="@color/white"
         android:textSize="12sp" />
 
@@ -26,21 +24,21 @@
         android:layout_alignBaseline="@+id/tv_stoptime1"
         android:layout_alignBottom="@+id/tv_stoptime1"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="15dp"
         android:text="12:35 pm"
-        android:textColor="@color/white"
+        android:textColor="@color/gray"
+        android:layout_marginRight="20dp"
         android:textSize="12sp" />
 
     <TextView
-        android:id="@+id/tv_stopname"
+        android:id="@+id/tv_stoptime1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="5dp"
-        android:maxLength="15"
-        android:text=""
-        android:textColor="@color/white"
+        android:layout_alignTop="@+id/tv_stopname"
+        android:layout_toLeftOf="@+id/tv_stoptime2"
+        android:layout_marginRight="30dp"
+        android:maxLength="35"
+        android:text="12:00 pm"
+        android:textColor="@color/gray"
         android:textSize="12sp" />
 
 </RelativeLayout>

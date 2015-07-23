@@ -57,7 +57,6 @@ public class RouteMenu extends Fragment {
     private  ArrayList<Route> CustomListViewValuesArr = new ArrayList<Route>();
     
     ListView lv;
-    GetJSON json;
 
 	@SuppressLint("NewApi")
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
