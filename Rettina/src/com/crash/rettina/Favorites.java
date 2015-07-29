@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class Favorites extends Fragment{
 	
@@ -24,7 +25,9 @@ public class Favorites extends Fragment{
 	
 	Main_Tile a;
     public Favorites fav = null;
-    
+	public TextView tv_emptyfavs;
+	public boolean are_there_favorites = false; // This boolean controls whether their are favorites displayed, or if the empty favorites message should be displayed
+
     ImageButton imgbtn_listviewbutton;
 
 
@@ -34,13 +37,17 @@ public class Favorites extends Fragment{
     	fav = this;
         Resources res = getResources();
 
-    
     	View view = inflater.inflate(R.layout.favorites,
     	        container, false);
-    
+    	
+    	
+		tv_emptyfavs = (TextView) view.findViewById(R.id.tv_emptyfavs);
+		
         a = (Main_Tile) getActivity();
-       
-
+        
+        if(selectedFavs.size() > 0){
+			are_there_favorites = true;
+        }
        
 	 lv_favs = (ListView) view.findViewById(R.id.lv_favorites);	
 	    /**************** Create Custom Adapter *********/
@@ -48,7 +55,24 @@ public class Favorites extends Fragment{
      lv_favs.setAdapter( adapter );
      
      
-     imgbtn_listviewbutton = (ImageButton) view.findViewById(R.id.imgbtn_dropdown);
+  // If favorites is empty, set the favorites to display the default empty favs message and hide the favs
+		if(are_there_favorites == false){
+			System.out.println("There aren't any favorites");
+			
+			tv_emptyfavs.setVisibility(View.VISIBLE);
+//			lv_favs.setVisibility(View.GONE);
+		}
+		// Otherwise, display the favorites and hide the default empty message
+		else{
+			
+			System.out.println("There are favorites");
+
+//			lv_favs.setVisibility(View.VISIBLE);
+			tv_emptyfavs.setVisibility(View.GONE);
+		}
+     
+     
+     imgbtn_listviewbutton = (ImageButton) view.findViewById(R.id.imgbtn_closefav);
      
      imgbtn_listviewbutton.setOnClickListener(new View.OnClickListener() {
 		

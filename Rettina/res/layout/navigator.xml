@@ -2,117 +2,128 @@
      xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_blue"
     android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/tv_navigation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:text="Red"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
+<!--     <TextView -->
+<!--         android:id="@+id/tv_navigation" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_centerHorizontal="true" -->
+<!--         android:text="Red" -->
+<!--         android:textColor="@android:color/white" -->
+<!--         android:textSize="16sp" /> -->
 
-    <TextView
-        android:id="@+id/tv_currentstop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="30dp"
-        android:text="Current Stop:"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
+<!--     <TextView -->
+<!--         android:id="@+id/tv_currentstop" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_alignParentLeft="true" -->
+<!--         android:layout_marginLeft="10dp" -->
+<!--         android:layout_marginTop="30dp" -->
+<!--         android:text="Current Stop:" -->
+<!--         android:textColor="@android:color/white" -->
+<!--         android:textSize="16sp" /> -->
 
-    <TextView
-        android:id="@+id/tv_currentstop_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="30dp"
-        android:layout_toRightOf="@+id/tv_currentstop"
-        android:text="Student Union"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
+<!--     <TextView -->
+<!--         android:id="@+id/tv_currentstop_name" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_marginLeft="5dp" -->
+<!--         android:layout_marginTop="30dp" -->
+<!--         android:layout_toRightOf="@+id/tv_currentstop" -->
+<!--         android:text="Student Union" -->
+<!--         android:textColor="@android:color/white" -->
+<!--         android:textSize="16sp" /> -->
 
-    <TextView
-        android:id="@+id/tv_nextstop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/tv_currentstop"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="10dp"
-        android:text="Next Stop:"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
+<!--     <TextView -->
+<!--         android:id="@+id/tv_nextstop" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_alignParentLeft="true" -->
+<!--         android:layout_below="@+id/tv_currentstop" -->
+<!--         android:layout_marginLeft="10dp" -->
+<!--         android:layout_marginTop="10dp" -->
+<!--         android:text="Next Stop:" -->
+<!--         android:textColor="@android:color/white" -->
+<!--         android:textSize="16sp" /> -->
 
-    <TextView
-        android:id="@+id/tv_nextstop_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_currentstop_name"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="10dp"
-        android:layout_toRightOf="@+id/tv_nextstop"
-        android:text="North Parking Garage"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
+<!--     <TextView -->
+<!--         android:id="@+id/tv_nextstop_name" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_below="@+id/tv_currentstop_name" -->
+<!--         android:layout_marginLeft="5dp" -->
+<!--         android:layout_marginTop="10dp" -->
+<!--         android:layout_toRightOf="@+id/tv_nextstop" -->
+<!--         android:text="North Parking Garage" -->
+<!--         android:textColor="@android:color/white" -->
+<!--         android:textSize="16sp" /> -->
 
-    <TextView
-        android:id="@+id/tv_nextstop_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/tv_currentstop_name"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp"
-        android:text="2 min"
-        android:textColor="@android:color/white"
-        android:textSize="16sp" />
+<!--     <TextView -->
+<!--         android:id="@+id/tv_nextstop_time" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_alignParentRight="true" -->
+<!--         android:layout_below="@+id/tv_currentstop_name" -->
+<!--         android:layout_marginRight="10dp" -->
+<!--         android:layout_marginTop="10dp" -->
+<!--         android:text="2 min" -->
+<!--         android:textColor="@android:color/white" -->
+<!--         android:textSize="16sp" /> -->
 
-    <ImageButton
-        android:id="@+id/imgbtn_previousStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/tv_nextstop_name"
-        android:layout_marginLeft="25dp"
-        android:layout_marginTop="5dp"
-        android:background="@android:color/transparent"
-        android:scaleX="-1"
-        android:src="@drawable/rightarrow" />
+<!--     <ImageButton -->
+<!--         android:id="@+id/imgbtn_previousStop" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_alignParentLeft="true" -->
+<!--         android:layout_below="@+id/tv_nextstop_name" -->
+<!--         android:layout_marginLeft="25dp" -->
+<!--         android:layout_marginTop="5dp" -->
+<!--         android:background="@android:color/transparent" -->
+<!--         android:scaleX="-1" -->
+<!--         android:src="@drawable/rightarrow" /> -->
 
-    <ImageButton
-        android:id="@+id/imgbtn_nextStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/tv_nextstop_name"
-        android:layout_marginRight="25dp"
-        android:layout_marginTop="5dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/rightarrow" />
-
-    <ImageButton
-        android:id="@+id/imgbtn_close"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="5dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/remove" />
-
-    <Button
+<!--     <ImageButton -->
+<!--         android:id="@+id/imgbtn_nextStop" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_alignParentRight="true" -->
+<!--         android:layout_below="@+id/tv_nextstop_name" -->
+<!--         android:layout_marginRight="25dp" -->
+<!--         android:layout_marginTop="5dp" -->
+<!--         android:background="@android:color/transparent" -->
+<!--         android:src="@drawable/rightarrow" /> -->
+    
+<Button
         android:id="@+id/btn_share"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/imgbtn_previousStop"
+        android:layout_width="60dp"
+        android:layout_height="25dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:background="@color/dark_blue"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/round_tv"
+        android:textColor="@color/white"
         android:text="Share" />
+
+<ImageButton
+    android:id="@+id/imgbtn_closenav"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_above="@+id/gridview_nav"
+    android:layout_alignParentLeft="true"
+    android:background="@drawable/roundshapebtn"
+    android:src="@drawable/abc_ic_clear_mtrl_alpha" />
+
+<GridView
+    android:id="@+id/gridview_nav"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_alignParentLeft="true"
+    android:layout_below="@+id/btn_share"
+    android:background="@color/dark_blue"
+    android:columnWidth="100dp"
+    android:gravity="center"
+    android:numColumns="auto_fit"
+    android:stretchMode="columnWidth" >
+</GridView>
 
     </RelativeLayout>

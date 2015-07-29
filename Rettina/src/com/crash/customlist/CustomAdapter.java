@@ -280,7 +280,7 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 
 						
 						if(data.get(position).isNavMode() == true){
-							 tempA.mLayout.setPanelState(PanelState.COLLAPSED);
+//							 tempA.mLayout.setPanelState(PanelState.COLLAPSED);
 							 
 							 CameraPosition cameraPosition = new CameraPosition.Builder()
 							    .target(data.get(position).getStops().get(0).getLatLng())      // Sets the center of the map to Mountain View

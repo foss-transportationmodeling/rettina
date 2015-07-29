@@ -1,28 +1,40 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_blue"
     android:orientation="vertical" >
+
+
+    <ImageButton
+        android:id="@+id/imgbtn_closeroute"
+        android:layout_width="22dp"
+        android:layout_height="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/roundshapebtn"
+        android:src="@drawable/abc_ic_clear_mtrl_alpha" />
 
     <GridView
         android:id="@+id/gridView1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/tv_routestab"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/imgbtn_closeroute"
+        android:background="@color/dark_blue"
         android:columnWidth="100dp"
         android:gravity="center"
         android:numColumns="auto_fit"
         android:stretchMode="columnWidth" >
-
     </GridView>
-
-    <TextView
-        android:id="@+id/tv_routestab"
+    
+    
+<TextView
+        android:id="@+id/tv_searching"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:textColor="@color/white"
-        android:text="Routes"/>
+        android:layout_centerVertical="true" 
+        android:text="Searching..." 
+        android:textSize="20dp"
+        android:textColor="@color/white" />
 
 </RelativeLayout>

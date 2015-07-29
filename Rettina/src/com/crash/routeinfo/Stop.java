@@ -26,6 +26,9 @@ public class Stop {
 	private LatLng latLng;
 	private ArrayList<LatLng> routePoints = new ArrayList<LatLng>();
 	private String routeTitle;
+	private String arrival_time;
+	private String departure_time;
+
 
 	// Constructor for setting up the Stop class
 	
@@ -103,6 +106,26 @@ public class Stop {
 
 	public void setRouteTitle(String routeTitle) {
 		this.routeTitle = routeTitle;
+	}
+
+
+	public String getDeparture_time() {
+		return departure_time;
+	}
+
+
+	public void setDeparture_time(String departure_time) {
+		this.departure_time = departure_time.substring(0, 5);
+	}
+
+
+	public String getArrival_time() {
+		return arrival_time;
+	}
+
+
+	public void setArrival_time(String arrival_time) {
+		this.arrival_time = arrival_time.substring(0, 5);
 	}
 	
 	

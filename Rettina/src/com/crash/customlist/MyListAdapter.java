@@ -66,7 +66,7 @@ public class MyListAdapter extends BaseAdapter {
 		inflater = (LayoutInflater) activity
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		tempValue = null;	
-		
+				
 	}
 
 	public ArrayList<Stop> getData() {
@@ -94,6 +94,11 @@ public class MyListAdapter extends BaseAdapter {
 			// first
 //			mData.add(mData.size(), new Stop(r.getRouteID(), r.getStops()
 //					.get(0).getStopID(), r.getRouteTitle(), null));
+
+			// Adding the route title first the first position
+			if(mData.size() < 1){
+			mData.add(new Stop(r.getRouteID(), r.getStops().get(0).getStopID(), r.getRouteTitle(), r.getStops().get(0).getLatLng()));
+			}
 
 			mData.addAll(r.getStops());
 
@@ -230,15 +235,19 @@ public class MyListAdapter extends BaseAdapter {
 				// holder.tv_stopTime.setFilters( new InputFilter[] { new
 				// InputFilter.LengthFilter(10) }
 
-//				holder.tv_stopTime.setTextColor(holder.tv_stopTime
-//						.getResources().getColor(R.color.gray));
+				holder.tv_stopTime.setTextColor(holder.tv_stopTime
+						.getResources().getColor(R.color.gray));
+				
+				holder.tv_stopTime2.setText(mData.get(position).getArrival_time());
+				
+				holder.tv_stopTime.setText(mData.get(position).getDeparture_time());
 
 				holder.tv_stopName.setText(mData.get(position)
 						.getStopDescription());
 //				
 			}
 				
-	//		}
+			}
 			//
 //			else {
 //			
@@ -249,47 +258,47 @@ public class MyListAdapter extends BaseAdapter {
 //
 //			}
 	//	}
-			 }
+		//	 }
 
-		vi.setOnClickListener(new OnClickListener() {
-
-			// Used for MainActivity UI
-//			private MainActivity mainAct;
-			
-			// Used for Tile UI
-			private Main_Tile mainAct;
-
-
-			@Override
-			public void onClick(View v) {
-
-				if (mData.size() > 0) {
-
-					// If the Latlng is not null, then go to that Stop. This is
-					// because route titles have null latlng
-					if (mData.get(position).getLatLng() != null) {
-						System.out.println("Clicked: "
-								+ mData.get(position).getStopDescription());
-						mainAct = (Main_Tile) activity;
-
-						mainAct.googleMap.animateCamera(CameraUpdateFactory
-								.newLatLngZoom(mData.get(position).getLatLng(),
-										16));
-						mData.get(position).getMarker().showInfoWindow();
-					} else {
-						System.out.println("Clicked a route title!");
-
-					}
-
-				}
-			}
-		});
-		//routeTitles.add(mData.size());
-		
+//		vi.setOnClickListener(new OnClickListener() {
+//
+//			// Used for MainActivity UI
+////			private MainActivity mainAct;
+//			
+//			// Used for Tile UI
+//			private Main_Tile mainAct;
+//
+//
+//			@Override
+//			public void onClick(View v) {
+//
+//				if (mData.size() > 0) {
+//
+//					// If the Latlng is not null, then go to that Stop. This is
+//					// because route titles have null latlng
+//					if (mData.get(position).getLatLng() != null) {
+//						System.out.println("Clicked: "
+//								+ mData.get(position).getStopDescription());
+//						mainAct = (Main_Tile) activity;
+//
+//						mainAct.googleMap.animateCamera(CameraUpdateFactory
+//								.newLatLngZoom(mData.get(position).getLatLng(),
+//										16));
+//						mData.get(position).getMarker().showInfoWindow();
+//					} else {
+//						System.out.println("Clicked a route title!");
+//
+//					}
+//
+//				}
+//			}
+//		});
+//		//routeTitles.add(mData.size());
+//		
 		return vi;
 		
 	}
-
+//}
 	public void removeStops(ArrayList<Stop> tempStops, Route r) {
 		// Remove the route title so when trying to add Routes, it can
 		// accurately

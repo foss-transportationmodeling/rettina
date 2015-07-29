@@ -4,23 +4,33 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+
     <ListView
         android:id="@+id/lv_favorites"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_above="@+id/imageButton1"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/imgbtn_closefav"
         android:background="@color/gray" >
-
     </ListView>
 
     <ImageButton
-        android:id="@+id/imgbtn_dropdown"
+        android:id="@+id/imgbtn_closefav"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/roundshapebtn"
+        android:src="@drawable/abc_ic_clear_mtrl_alpha" />
+    
+     <TextView
+        android:id="@+id/tv_emptyfavs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:background="@color/gray"
-        android:src="@drawable/abc_spinner_textfield_background_material" />
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" 
+        android:text="No Favorites" 
+        android:textSize="20dp"
+        android:textColor="@color/white" />
 
 </RelativeLayout>

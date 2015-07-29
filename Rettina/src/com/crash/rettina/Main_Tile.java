@@ -39,6 +39,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -88,6 +89,7 @@ public class Main_Tile extends Activity implements LocationListener {
 	public Navigator fragment_Navigator;
 	public Sharing fragment_Sharing;
 	public RoutesFragment fragment_Routes;
+	public Settings fragment_Settings;
 
 	public FragmentManager manager;
 
@@ -106,6 +108,9 @@ public class Main_Tile extends Activity implements LocationListener {
 	public double east;
 	public double north;
 	public double west;
+	
+	// Add a hiding Searching text method in this class because Routesfragment can not have it due to the views not being created in time
+	
 	
 	// These two variables are used to collect 'Sharing' data from the user. Since Sharing is another fragment
 	// These variables are stored on the Main_Tile activity to allow for easy location transfer since this activity is always running
@@ -140,6 +145,8 @@ public class Main_Tile extends Activity implements LocationListener {
 		fragment_Navigator = new Navigator(main);
 		fragment_Sharing = new Sharing(main);
 		fragment_Routes = new RoutesFragment(main);
+		fragment_Settings = new Settings(main);
+
 
 		// Remove the compass and the zoom options that come stock on the map
 		googleMap.getUiSettings().setZoomControlsEnabled(false);
@@ -189,11 +196,36 @@ public class Main_Tile extends Activity implements LocationListener {
 			@Override
 			public void onClick(View v) {
 
+				
 				ft = manager.beginTransaction();
+				
+				if(fragment_Routes.isVisible()){
+					
+					FragmentTransaction transaction = getFragmentManager().beginTransaction();
+					transaction.setCustomAnimations(R.animator.enter_anim, R.animator.exit_anim);
+					transaction.add(R.id.fragment_group_tile, fragment_Schedule);
+					transaction.addToBackStack("Schedule");
+					transaction.commit();
+					
 				ft.remove(fragment_Routes);
-				ft.add(R.id.fragment_group_tile, fragment_Schedule);
-				// ft.addToBackStack("Schedule");
 				ft.commit();
+
+				}
+				else if(fragment_Favorites.isVisible()){
+					
+					
+					FragmentTransaction transaction = getFragmentManager().beginTransaction();
+					transaction.setCustomAnimations(R.animator.enter_anim, R.animator.exit_anim);
+					transaction.replace(R.id.fragment_group_tile, fragment_Schedule);
+					transaction.addToBackStack("Schedule");
+					transaction.commit();
+					
+					ft.remove(fragment_Favorites);
+					ft.commit();
+
+				}
+				
+				
 
 				// if(fragment_Schedule.isVisible()){
 				imgbtn_SchedulePopup.setVisibility(View.GONE);
@@ -253,206 +285,218 @@ public class Main_Tile extends Activity implements LocationListener {
 
 		lm.requestLocationUpdates(provider, 1, 0, this);
 
-		tabhost.getTabWidget().getChildAt(0)
-				.setOnClickListener(new View.OnClickListener() {
+		// Handles when "Search" tab is clicked... Should search for the routes that fall within the screen's coordinates
+				// And place the routes fragment at the bottom of the screen unless it is already present
+				tabhost.getTabWidget().getChildAt(0)
+						.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						System.out.println("Clicked Search!");
-
-						// Grab the corner of the screens coordinates so the
-						// routes can be found based on GPS coordinates
-						getScreenCornerCoordinates();
-
-						if (tabhost.getCurrentTab() == 0
-								&& fragment_Routes.isVisible()) {
-
-							// Set for the new navigation fragment
-							// mLayout.setPanelState(PanelState.COLLAPSED);
-
-							ft = manager.beginTransaction();
-							ft.remove(fragment_Routes);
-							ft.commit();
-
-							tabhost.setCurrentTab(3);
-
-							if (clickedRoute != null
-									&& clickedRoute.getPolyLine().isVisible()) {
-								// hideStops(clickedRoute);
-								// hideRoute(clickedRoute);
-
-							}
-
-						} else {
-
-							if (fragment_Schedule.isVisible()) {
+							@Override
+							public void onClick(View v) {
+								// Grab the corner of the screens coordinates so the
+								// routes can be found based on GPS coordinates
+								getScreenCornerCoordinates();
+								
+								
 								ft = manager.beginTransaction();
-								ft.remove(fragment_Schedule);
-								ft.commit();
-							}
 
-							if (tabhost.getCurrentTab() == 1
-									&& fragment_Favorites.isVisible()) {
-								// Need to make it so it only connects when
-								// unique routes will be shown, otherwise, it
-								// will just be
-								// Doing more work by getting the same routes
-								// over and over whenver search is clicked
+								// If the Search tab is already pressed and the Routes Fragment is visible, then remove the Routes Fragment
+								if (tabhost.getCurrentTab() == 0
+										&& fragment_Routes.isVisible()) {
+
+									ft.remove(fragment_Routes);
+									ft.commit();
+
+									tabhost.setCurrentTab(3);
+
+								}
+								
+								// If the Favorites Fragment is visible, remove it
+								else if (fragment_Routes.isVisible()) {
+									ft.remove(fragment_Routes);
+									ft.commit();
+
+								}
+								
+								// Otherwise, remove all other fragments and display the Routes fragment
+								else {
+									
+
+									// If the schedule fragment is visible, the remove the schedule fragment
+									if (fragment_Schedule.isVisible()) {
+										ft.remove(fragment_Schedule);
+									}			
+									
+									// If the Settings fragment is visible, remove it
+									else if (fragment_Settings.isVisible()) {
+										ft.remove(fragment_Settings);
+									}
+									
+									// If the Navigator Fragment is visible, remove it
+									else if (fragment_Navigator.isVisible()) {
+										ft.remove(fragment_Navigator);
+									}
+
+									
+
+									// Get all the routes that fall within the maps coordinates
+									connect = new Connect(main, googleMap);
+									
+									fragment_Routes.searching(true); // Sets searching to be true, so the default searching text will be displayed
+
+									connect.execute();
+									
+									tabhost.setCurrentTab(0);
+									
+									// Add the Routes Fragment at the bottom of the screen				
+									ft.add(R.id.main_fragmentgroup, fragment_Routes);
+									ft.addToBackStack("Routes");
+									ft.commit();
+
+								}
+
+							}
+						});
+
+				// Handles when the "Favorites" tab is clicked. Should display the favorite routes at the bottom of the screen
+				// And remove any other fragments
+				tabhost.getTabWidget().getChildAt(1)
+						.setOnClickListener(new View.OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								System.out.println("Clicked Favorites!");
+								
+								ft = manager.beginTransaction();
+
+								fragment_Favorites.are_there_favorites = false;
+								
+								// If the "Favorites" tab has already been clicked and is currently being displayed
+								// At the bottom of the screen, then remove the Favorites fragment and set the tab to hidden
+								if (tabhost.getCurrentTab() == 1
+										&& fragment_Favorites.isVisible()) {
+
+									ft.remove(fragment_Favorites);		// Remove the "Favorites" fragment
+									ft.commit();
+									tabhost.setCurrentTab(3);			// This tab is hidden to the user
+									
+								}
+								
+								// If the Favorites Fragment is visible, remove it
+								else if (fragment_Favorites.isVisible()) {
+									ft.remove(fragment_Favorites);
+									ft.commit();
+								}
+								
+								// Otherwise, remove all other fragments, and display the Favorites fragment
+								else {
+
+									// If the Schedule Fragment is visible, remove it
+									if (fragment_Schedule.isVisible()) {
+										ft.remove(fragment_Schedule);
+									}
+									
+									// If the Routes Fragment is visible, remove it
+									else if (fragment_Routes.isVisible()) {
+										System.out.println("Routes is aleady added!");
+										ft.remove(fragment_Routes);
+									}
+									
+									// If the Navigator Fragment is visible, remove it
+									else if (fragment_Navigator.isVisible()) {
+										ft.remove(fragment_Navigator);
+									}
+									
+									// If the Settings Fragment is visible, remove it
+									else if (fragment_Settings.isVisible()) {
+										ft.remove(fragment_Settings);
+									}
+									
+									// If "Navigator" is visible, remove it
+									else if (fragment_Favorites.isVisible()) {
+										ft.remove(fragment_Favorites);
+										ft.commit();
+									}
+
+									// Add the Favorites fragment to the bottom of the screen and set the tab to "Favorites"
+									ft.add(R.id.main_fragmentgroup, fragment_Favorites);
+									ft.addToBackStack("Favorites");
+									ft.commit();
+
+									tabhost.setCurrentTab(1);
+
+								}
+
+							}
+						});
+
+				// Handles when the "Settings" tab is clicked... Should display the Settings Fragment and remove
+				// Other fragments.... If Settings is already visible, remove it
+				tabhost.getTabWidget().getChildAt(2)
+						.setOnClickListener(new View.OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								System.out.println("Clicked Settings!");
 
 								ft = manager.beginTransaction();
-								// ft.replace(R.id.main_fragmentgroup,
-								// (Fragment)fm);
-								ft.remove(fragment_Favorites);
+								
+								fragment_Routes.searching(false);
+								
+								// If the "Settings" tab is already highlighted, and is the "Settings" fragment
+								// Is already active, remove it
+								if (tabhost.getCurrentTab() == 2
+										&& fragment_Settings.isVisible()) {
+									
+									ft.remove(fragment_Settings);
+									ft.commit();
+
+									tabhost.setCurrentTab(3);
+
+								}
+								
+								// If Settings is already visibile, remove it
+								else if(fragment_Settings.isVisible()){
+									ft.remove(fragment_Settings);
+									ft.commit();
+
+								}
+
+								// Otherwise, remove any other visible fragment and display the Settings fragment
+								else{
+
+									// If "Sharing" is visible, remove it
+									if (fragment_Sharing.isVisible()) {
+										ft.remove(fragment_Sharing);
+									}
+									// If "Schedule" is visible, remove it
+									else if (fragment_Schedule.isVisible()) {
+										ft.remove(fragment_Schedule);
+									}
+									// If "Navigator" is visible, remove it
+									else if (fragment_Navigator.isVisible()) {
+										ft.remove(fragment_Navigator);
+									}
+									// If "Favorites" is visible, remove it
+									else if (fragment_Favorites.isVisible()) {
+										ft.remove(fragment_Favorites);
+									}
+									// If "Routes" is visible, remove it
+									else if (fragment_Routes.isVisible()) {
+										ft.remove(fragment_Routes);
+									}
+									
+									
+									// Add the Settings fragment and set the tab to "Settings"
+									ft.add(R.id.fragment_group_tile, fragment_Settings);
+									ft.addToBackStack("Settings");
+									ft.commit();
+										
+									tabhost.setCurrentTab(2);
+
+								}
+
 							}
-
-							// Use for new Nav Fragment
-							// mLayout.setPanelState(PanelState.ANCHORED);
-
-							findViewById(R.id.main_fragmentgroup)
-									.setVisibility(View.VISIBLE);
-
-							ft = manager.beginTransaction();
-
-							if (fragment_Favorites.isAdded()) {
-								ft.remove(fragment_Favorites);
-							}
-
-							else if (fragment_Navigator.isAdded()) {
-								ft.remove(fragment_Navigator);
-							}
-
-//							getScreenCornerCoordinates();
-
-							ft.add(R.id.main_fragmentgroup, fragment_Routes);
-							ft.addToBackStack("Schedule");
-							ft.commit();
-
-							connect = new Connect(main, googleMap);
-							connect.execute();
-							tabhost.setCurrentTab(0);
-
-						}
-
-					}
-				});
-
-		tabhost.getTabWidget().getChildAt(1)
-				.setOnClickListener(new View.OnClickListener() {
-
-					@Override
-					public void onClick(View v) {
-						System.out.println("Clicked Favorites!");
-
-						if (tabhost.getCurrentTab() == 1
-								&& v.getTag().equals(1)) {
-
-							ft = manager.beginTransaction();
-							ft.remove(fragment_Favorites);
-							ft.commit();
-							tabhost.setCurrentTab(3);
-						} else {
-							ft = manager.beginTransaction();
-
-							if (fragment_Schedule.isVisible()) {
-								ft = manager.beginTransaction();
-								ft.remove(fragment_Schedule);
-							}
-
-							if (fragment_Routes.isAdded()) {
-								System.out.println("Routes is aleady added!");
-								ft.remove(fragment_Routes);
-							} else if (fragment_Favorites.isAdded()) {
-								ft.remove(fragment_Favorites);
-							}
-
-							else if (fragment_Navigator.isAdded()) {
-								ft.remove(fragment_Navigator);
-							}
-
-							ft.add(R.id.main_fragmentgroup, fragment_Favorites);
-							ft.addToBackStack("Favorites");
-							ft.commit();
-
-							tabhost.setCurrentTab(1);
-
-						}
-
-					}
-				});
-
-		tabhost.getTabWidget().getChildAt(2)
-				.setOnClickListener(new View.OnClickListener() {
-
-					@Override
-					public void onClick(View v) {
-						System.out.println("Clicked Settings!");
-
-						if (tabhost.getCurrentTab() == 1
-								&& fragment_Favorites.isVisible()) {
-							ft = manager.beginTransaction();
-							ft.remove(fragment_Favorites);
-
-							ft.add(R.id.fragment_group_tile, fragment_Sharing);
-							ft.addToBackStack("Sharing");
-							ft.commit();
-
-							tabhost.setCurrentTab(2);
-						}
-
-						else if (tabhost.getCurrentTab() == 2) {
-
-							// Set for next fragment
-							// mLayout.setPanelState(PanelState.COLLAPSED);
-
-							tabhost.setCurrentTab(3);
-
-							if (fragment_Sharing.isAdded()) {
-								ft = manager.beginTransaction();
-								ft.remove(fragment_Sharing);
-								ft.commit();
-							}
-
-							else if (fragment_Schedule.isAdded()) {
-								ft = manager.beginTransaction();
-								ft.remove(fragment_Schedule);
-								ft.commit();
-							}
-
-						} else {
-							if (fragment_Schedule.isVisible()) {
-								ft = manager.beginTransaction();
-								ft.remove(fragment_Schedule);
-							}
-							// Set for new nav fragment
-							// mLayout.setPanelState(PanelState.COLLAPSED);
-
-							// FragmentTransaction ft =
-							// manager.beginTransaction();
-							// ft.add(R.id.main_fragmentgroup,
-							// fragment_Schedule);
-							// ft.commit();
-
-							ft = manager.beginTransaction();
-
-							if (fragment_Routes.isAdded()) {
-								ft.remove(fragment_Routes);
-							} else if (fragment_Favorites.isAdded()) {
-								ft.remove(fragment_Favorites);
-							}
-
-							else if (fragment_Navigator.isAdded()) {
-								ft.remove(fragment_Navigator);
-							}
-
-							ft.add(R.id.fragment_group_tile, fragment_Sharing);
-							ft.addToBackStack("Sharing");
-							ft.commit();
-							tabhost.setCurrentTab(2);
-
-						}
-
-					}
-				});
+						});
 		
 	}
 
@@ -469,7 +513,9 @@ public class Main_Tile extends Activity implements LocationListener {
 		double lon = location.getLongitude();
 		LatLng latlng = new LatLng(lat, lon);
 
-		// googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lat_Lng, 13));
+		
+		// Added to prevent location null pointer exception
+		if(latlng != null){
 		myMarker.setPosition(latlng);
 		
 		
@@ -483,6 +529,7 @@ public class Main_Tile extends Activity implements LocationListener {
 		
 		System.out.println("Saving location, locationHolder size: " + locationHolder.size());
 		System.out.println(localDateFormat.format(new Date()));
+		}
 		}
 
 	}
@@ -549,7 +596,9 @@ public class Main_Tile extends Activity implements LocationListener {
 				routeTitles.add(routes.get(i).getRouteTitle());
 			}
 			fragment_Routes.adapter.notifyDataSetChanged();
-			fragment_Routes.gridview.setAdapter(adapter);
+			
+			// Commented out to see if new GridView style will work
+			//fragment_Routes.gridview.setAdapter(adapter);
 		}
 	}
 
@@ -574,9 +623,15 @@ public class Main_Tile extends Activity implements LocationListener {
 	}
 
 	public void hideSchedule() {
-		ft = manager.beginTransaction();
-		ft.remove(fragment_Schedule);
-		ft.commit();
+		
+		FragmentTransaction transaction = getFragmentManager().beginTransaction();
+		transaction.setCustomAnimations(R.animator.enter_anim, R.animator.exit_anim);
+		transaction.remove(fragment_Schedule);
+		transaction.commit();
+		
+//		ft = manager.beginTransaction();
+//		ft.remove(fragment_Schedule);
+//		ft.commit();
 
 	}
 
@@ -699,37 +754,15 @@ public class Main_Tile extends Activity implements LocationListener {
 				e.printStackTrace();
 			}
 		}
+	}
 		
-		// Using this temporary Trip_ID until I sort out getting the correct trip_ID from Navigator
-		try {			
-			outerJSONObj.put("trip_id", clickedRoute.getTripIDs().get(0));	// Add the Trip_ID and Locations Array to the outer JSON Obj
-			outerJSONObj.put("locations", locations);
-			
-			
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Printing JSON!");
-
-		for(int i = 0; i < locations.length(); i++){					// Add a JSON Obj to each element of the JSON Array
-			try {
-				System.out.println(locations.getJSONObject(i).get("x"));
-				System.out.println(locations.getJSONObject(i).get("y"));
-				System.out.println(locations.getJSONObject(i).get("timestamp"));
-				System.out.println(locations.getJSONObject(i).get("location_technology"));
-
-
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		// This method is used to alert that the Search fragment has been terminated... Used here because
+		// Main_Tile is the main Fragment/Activity that all the framents run off of
+	public void exitSearch(){
 		
-		Connect_LocationInfo connectLocation = new Connect_LocationInfo(main, main, outerJSONObj);
-		connectLocation.execute();
-		
-		// Stop tracking the user once the user has exited navigation
-		trackUser = false;
+		ft = manager.beginTransaction();
+		ft.remove(fragment_Routes);
+		ft.commit();
 	}
 	
 	public String getDeviceName() {

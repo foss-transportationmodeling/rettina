@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_blue"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/tv_locationtech"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="30dp"
+        android:text="Location Technology"
+        android:textColor="@color/white"
+        android:textSize="15dp" />
+
+    <RadioGroup
+        android:id="@+id/rg_locationtype"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/rg_locationtype"
+        android:layout_below="@+id/tv_locationtech"
+        android:layout_marginTop="20dp" >
+
+        <RadioButton
+            android:id="@+id/radio_network"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Network" />
+
+        <RadioButton
+            android:id="@+id/radio_gps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPS" />
+
+        <RadioButton
+            android:id="@+id/radio_bestavailable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Best Available" />
+    </RadioGroup>
+
+    <CheckBox
+        android:id="@+id/cb_autolocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/tv_autolocation"
+        android:layout_alignBottom="@+id/tv_autolocation"
+        android:layout_alignLeft="@+id/rg_locationtype" />
+
+    <CheckedTextView
+        android:id="@+id/tv_autolocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text="Autoshare Location Information"
+        android:textColor="@color/white"
+        android:textSize="15dp" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autotv_preferredcity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/cb_autolocation"
+        android:layout_alignRight="@+id/tv_autolocation"
+        android:layout_below="@+id/cb_autolocation"
+        android:layout_marginTop="47dp"
+        android:inputType="textMultiLine"
+        android:ems="10"
+        android:hint="Preferred City"
+        android:textSize="15dp" >
+
+        <requestFocus />
+    </AutoCompleteTextView>
+
+</RelativeLayout>

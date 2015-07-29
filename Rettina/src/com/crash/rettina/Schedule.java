@@ -19,26 +19,24 @@
 package com.crash.rettina;
 
 import java.util.ArrayList;
+
 import android.annotation.SuppressLint;
-import android.app.ActionBar.LayoutParams;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.VerticalSeekBar;
+
 import com.crash.customlist.MyListAdapter;
 import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
@@ -65,6 +63,8 @@ public class Schedule extends Fragment {
 
 	Schedule sched;
 	private static final int UNBOUNDED = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+	
+	private ImageButton imgbtn_closeSchedule;
 
 
 	@SuppressLint("Instantiatable")
@@ -94,6 +94,8 @@ public class Schedule extends Fragment {
 
 		lv_stopnames = (ListView) view.findViewById(R.id.lv_stopnames);
 //		lv_stoptimes = (ListView) view.findViewById(R.id.lv_stoptimes);
+		
+		imgbtn_closeSchedule = (ImageButton) view.findViewById(R.id.imgbtn_closeschedule);
 
 		seekbar.setMax(100);
 //		 seekbar.setDots(new int[] {0, 150, 300, 450});
@@ -123,11 +125,6 @@ public class Schedule extends Fragment {
 
 		adapter = new MyListAdapter(getActivity(), stops);
 		
-//		lv_stopnames.setAdapter(new ArrayAdapter<String>(sched.getActivity(),
-//				R.layout.schedstopcustomlist, lv_arr));
-		
-//		lv_stoptimes.setAdapter(adapter);
-		
 		lv_stopnames.setAdapter(adapter);
 
 		
@@ -145,22 +142,23 @@ public class Schedule extends Fragment {
 
 		
 
-		// imgbtn_closesched.setOnClickListener(new View.OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View v) {
-		//
-		//
-		// // FragmentTransaction ft = main_Tile.manager.beginTransaction();
-		// // ft.remove(sched);
-		// // ft.commit();
-		//
-		// // main_Tile.manager.beginTransaction().remove(sched).commit();
-		//
-		// main_Tile.hideSchedule();
-		//
-		// }
-		// });
+		imgbtn_closeSchedule.setOnClickListener(new View.OnClickListener() {
+		
+		 @Override
+		 public void onClick(View v) {
+		
+		
+		 // FragmentTransaction ft = main_Tile.manager.beginTransaction();
+		 // ft.remove(sched);
+		 // ft.commit();
+		
+		 // main_Tile.manager.beginTransaction().remove(sched).commit();
+			
+		
+		 main_Tile.hideSchedule();
+		
+		 }
+		 });
 		
 //		SeekSetDotPosition(lv_arr.length);
 		
@@ -336,7 +334,6 @@ public class Schedule extends Fragment {
 			adapter.addRoute(r);
 
 			((BaseAdapter) lv_stopnames.getAdapter()).notifyDataSetChanged();
-//			((BaseAdapter) lv_stoptimes.getAdapter()).notifyDataSetChanged();
 
 			System.out.println("Route: "
 					+ adapter.mData.get(0).getStopDescription());

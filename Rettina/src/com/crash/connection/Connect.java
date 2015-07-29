@@ -19,7 +19,9 @@
 
 package com.crash.connection;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +36,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.text.format.Time;
 import android.util.Log;
+import android.view.View;
 
 import com.crash.rettina.MainActivity;
 import com.crash.rettina.Main_Tile;
@@ -101,6 +104,8 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
+		
+		
 		// Showing progress dialog
 		// pDialog = new ProgressDialog(c);
 		// pDialog.setMessage("Please wait...");
@@ -114,6 +119,8 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 	protected Void doInBackground(Void... arg0) {
 		// Creating service handler class instance
 		// ServiceHandler sh = new ServiceHandler();
+		
+		
 		
 		getRoutes();
 		
@@ -133,6 +140,8 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 	//	routeMenu.setRouteData();
 		
 		activity_tile.updateRoutes();
+		activity_tile.fragment_Routes.searching(false); // Sets searching to be true, so the default searching text will be displayed
+		activity_tile.fragment_Routes.tv_searching.setVisibility(View.GONE);
 
 	}
 
@@ -536,25 +545,27 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 //		
 		sh = new ServiceHandler();
 
+		SimpleDateFormat localDateFormat = new SimpleDateFormat("hh:mm:ss");
+		
 		
 		// Need to make it so the second longitude is the one that is closest to 0
 		if(Math.abs(east) > Math.abs(west)){
 			System.out.println("first one");
 			sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.north +"&lat2=" + activity_tile.south + 
-			"&lon1=" + activity_tile.east + "&lon2=" + activity_tile.west,
+			"&lon1=" + activity_tile.east + "&lon2=" + activity_tile.west + "&start=" + localDateFormat.format(new Date()),
 			ServiceHandler.GET);
 		}
 		else{
 			System.out.println("second one");
 
 			sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.south +"&lat2=" + activity_tile.north + 
-			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east,
+			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east  + "&start=" + localDateFormat.format(new Date()),
 			ServiceHandler.GET);
 		}
 
 
 		System.out.println("http://137.99.15.144/routes?lat1="+activity_tile.south +"&lat2=" + activity_tile.north + 
-			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east);
+			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east  + "&start=" + localDateFormat.format(new Date()));
 	}
 
 	// public void setStopMarkers(){

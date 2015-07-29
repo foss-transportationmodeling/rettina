@@ -86,11 +86,9 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 		// ServiceHandler sh = new ServiceHandler();
 		
 		getStops(route);
+		getStopTimes(route);
+		
 		//getStops_Test(route);  // <---- Static data call
-		
-		
-		//getShape(route);
-
 
 		return null;
 	}
@@ -104,8 +102,9 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 		pDialog.dismiss();
 		
 		// This zooms into the first stops location.. It should zoom so it fits the whole route in but this can be solved later
-		map.moveCamera(CameraUpdateFactory.newLatLngZoom(route.getStops().get(0).getLatLng(), 13));
-
+		map.animateCamera(CameraUpdateFactory.newLatLngZoom(route.getStops().get(0).getLatLng(),
+				14));
+		
 	}
 
 	public void getStops(Route r) {
@@ -146,17 +145,7 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-//		String sh_Routes = sh.makeServiceCall(
-//				
-//				
-//				
-//				
-//				"http://137.99.15.144/stops?trip_id=6%20UConn%20Transportation%20Service",	// New API call, using Meriden
-//				ServiceHandler.GET);
-		
-		
-		
+
 		if (sh_Routes != null) {
 			try {
 				JSONObject jsonObj = new JSONObject(sh_Routes);
@@ -290,6 +279,60 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 
 				// System.out.println("First Stop: " +
 				// r.getStops().get(0).getStopDescription());
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Log.e("ServiceHandler", "Couldn't get any data from the url");
+		}
+
+	}
+	
+	public void getStopTimes(Route r) {
+		ServiceHandler sh = new ServiceHandler();	
+		
+		String sh_Routes = null;
+
+		try {
+			String query = URLEncoder.encode(r.getTripIDs().get(0), "utf-8");
+			String url = "http://137.99.15.144/stop_times?trip_id=" + query;
+
+			System.out.println("URL IS: " + url);
+
+			
+			sh_Routes = sh.makeServiceCall(
+					url,	// New API call, using Meriden
+					ServiceHandler.GET);
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		if (sh_Routes != null) {
+			try {
+				JSONObject jsonObj = new JSONObject(sh_Routes);
+				JSONArray jsonArray = jsonObj.getJSONArray("stop_times");
+
+				System.out.println("Length of Stops: " + jsonArray.length());
+
+				
+				// looping through All Contacts
+				for (int i = 0; i < jsonArray.length(); i++) {
+
+					JSONObject tempObj = jsonArray.getJSONObject(i);
+
+					String arrival_time = tempObj.get(
+							"arrival_time").toString();
+					
+					String departure_time = tempObj.get(
+							"departure_time").toString();
+					if(i < r.getStops().size()){
+					r.getStops().get(i).setArrival_time(arrival_time);
+					r.getStops().get(i).setDeparture_time(departure_time);
+					}
+				}
+				
 
 			} catch (JSONException e) {
 				e.printStackTrace();

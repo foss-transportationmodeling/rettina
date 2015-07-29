@@ -22,9 +22,9 @@
     <FrameLayout
         android:id="@+id/main_fragmentgroup"
         android:layout_width="match_parent"
-        android:layout_height="175dp"
+        android:layout_height="200dp"
         android:layout_alignParentBottom = "true" 
-        android:visibility="gone">
+        android:visibility="visible">
     </FrameLayout>
 
     <TabHost
