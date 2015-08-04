@@ -11,25 +11,38 @@ import android.view.MotionEvent;
 import com.crash.rettina.R;
 import com.crash.rettina.Schedule;
   
+	/*
+	 * Mitch Thornton
+	 * Karthik Konduri
+	 * Rettina - 2015
+	 * 
+	 * Vertical Seekbar is used to turn the normal seekbar into a custom vertical version.
+	 * Vertical Seekbar is used in the Schedule fragment. Later, custom graphics such as
+	 * Markers for each stop will be added along the seekbar
+	 */
+
 public class VerticalSeekBar extends SeekBar {  
 	
 	
-	private int[] dotPositions = null;
-	private Bitmap dotBitmap = null;
+	private int[] dotPositions = null;	// These will be used in the future to mark each Stop on the Seekbar
+	private Bitmap dotBitmap = null;	// This will hold the graphics for the Stop positions
 	Schedule sched;
   
+	// Constructor
     public VerticalSeekBar(Schedule activity) {  
         super(activity.getActivity());  
-        init(null);
+        init(null);						// Initiates the Seekbar dot resoucres
         sched = activity;
     }  
   
+	// Constructor
     public VerticalSeekBar(Context context, AttributeSet attrs, int defStyle) {  
         super(context, attrs, defStyle);  
         init(attrs);
 
     }  
-  
+    
+	// Constructor
     public VerticalSeekBar(Context context, AttributeSet attrs) {  
         super(context, attrs);
         init(attrs);
@@ -40,6 +53,7 @@ public class VerticalSeekBar extends SeekBar {
         super.onSizeChanged(h, w, oldh, oldw);  
     }  
   
+    // Used to initiate the resources for each stop position on the Seekbar
    private void init(final AttributeSet attributeSet) {
        final TypedArray attrsArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.DottedSeekBar, 0, 0);
 
@@ -98,6 +112,8 @@ public class VerticalSeekBar extends SeekBar {
         }
     }  
   
+    // OnTouchEvent handles clicking along the Seekbar, but I commented it out so the user can not move the progress of the seekbar
+    // Since the Seekbar progress is supposed to show the buse's position
     @Override  
     public boolean onTouchEvent(MotionEvent event) {  
 //        if (!isEnabled()) {  

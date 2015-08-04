@@ -7,14 +7,10 @@
 
 /*
  * CustomAdapter is used to create the custom listview design for the "Favorites" listview shown on the left fragment
- * It contains a checkbox on the left side of the view which is used to show whether the route is toggled or not. Each
+ * It contains a checkbox which is used to show whether the route is toggled or not. Each
  * element of the listview also contains two image buttons. The further left icon is used to start following along the
- * route basically indicating that the user is on that current route. The icon further to the right is used to remove
- * the route from the favorites
- */
-
-/*
-
+ * route basically indicating that the user is on that current route. This triggers 'Navigation mode' and the app responds
+ * as if it is following along with the route. The icon further to the right is used to remove the route from the favorites
  */
 
 package com.crash.customlist;
@@ -22,10 +18,10 @@ package com.crash.customlist;
 import java.util.ArrayList;
 
 import com.crash.rettina.Favorites;
-import com.crash.rettina.MainActivity;
-import com.crash.rettina.Main_Tile;
+//import com.crash.rettina.MainActivity;
+import com.crash.rettina.Main;
 import com.crash.rettina.R;
-import com.crash.rettina.RouteMenu;
+//import com.crash.rettina.RouteMenu;
 import com.crash.routeinfo.Route;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -50,74 +46,51 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-/********* Adapter class extends with BaseAdapter and implements with OnClickListener ************/
 public class CustomAdapter extends BaseAdapter implements OnClickListener {
 
-	/*********** Declare Used Variables *********/
 	private Activity activity;
-	private ArrayList<Route> data;
-	public RouteMenu routeActivity;
+	private Main maintile_activity;				// The Main activity which 'everything run's through' and is connected to
 
-	public Favorites routeActivity_favorites;
+	private ArrayList<Route> data;				// The set of Routes
+	private Favorites routeActivity_favorites;	// The 'Favorites' Fragment
+	private Route navRoute;						// Determines which route is currently in 'Navigation Mode'
 
 	private static LayoutInflater inflater = null;
-	public Resources res;
-	Route tempValues = null;;
-	CheckBox cb_showRoute;
-	int i = 0;
-	public MainActivity tempA;
+	
+	private Resources res;
+	private Route tempValues = null;		// Used to hold a route
 
-	public Main_Tile maintile_activity;
 
-	private Route navRoute;
-
-	/************* CustomAdapter Constructor *****************/
-	public CustomAdapter(Activity a, ArrayList<Route> d, Resources resLocal,
-			RouteMenu r) {
-
-		/********** Take passed values **********/
-		activity = a;
-		data = d;
-		res = resLocal;
-		routeActivity = r;
-		tempA = (MainActivity) activity;
-
-		/*********** Layout inflator to call external xml layout () ***********/
-		inflater = (LayoutInflater) activity
-				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-	}
-
-	// Used for Tile UI
-	/************* CustomAdapter Constructor *****************/
+	// Constructor
 	public CustomAdapter(Activity a, ArrayList<Route> d, Resources resLocal,
 			Favorites r) {
-
-		/********** Take passed values **********/
-		activity = a;
-		data = d;
+		
+		activity = a;						// Passing in Main activity
+		data = d;							// Passing in the 'favorite' routes
 		res = resLocal;
-		routeActivity_favorites = r;
-		maintile_activity = (Main_Tile) activity;
+		routeActivity_favorites = r;		// Passing in the 'Favorites' fragment
+		maintile_activity = (Main) a;		// Saving the Main activity
 
-		/*********** Layout inflator to call external xml layout () ***********/
+		
+		// Inflates 'Favorites' listview through external XML resource
 		inflater = (LayoutInflater) activity
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 	}
 
-	/******** What is the size of Passed Arraylist Size ************/
+	// Gets the size of data
 	public int getCount() {
-
 		if (data.size() <= 0)
 			return 1;
 		return data.size();
 	}
 
+	// Gets the object at the given position
 	public Object getItem(int position) {
 		return position;
 	}
 
+	// Get's the object's ID at the given position
 	public long getItemId(int position) {
 		return position;
 	}
@@ -129,214 +102,124 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 		public ImageButton imgbtn_removeRoute;
 		public ImageButton imgbtn_followRoute;
 		public ImageButton imgbtn_schedule;
-
 		public TextView tv_routeName;
 
 	}
 
-	/****** Depends upon data size called for each row , Create each ListView row *****/
+	// Allows for customizing the 'Favorites' listview
+	// Depends upon data size called for each row , Create each ListView row
 	public View getView(final int position, View convertView, final ViewGroup parent) {
 
 		View vi = convertView;
 		final ViewHolder holder;
 
-		//if (convertView == null) {
-
-			/****** Inflate tabitem.xml file for each row ( Defined below ) *******/
-			vi = inflater.inflate(R.layout.tabitem, null);
-
-			/****** View Holder Object to contain tabitem.xml file elements ******/
+			vi = inflater.inflate(R.layout.tabitem, null);	// Inflates the view using tabitem, a custom XML 
 
 			holder = new ViewHolder();
-			holder.cb_showRoute = (CheckBox) vi.findViewById(R.id.cb_showroute);
+			holder.cb_showRoute = (CheckBox) vi.findViewById(R.id.cb_showroute);// Holder for the Checkbox
 
-			cb_showRoute = (CheckBox) vi.findViewById(R.id.cb_showroute);
-
-			holder.imgbtn_removeRoute = (ImageButton) vi
-					.findViewById(R.id.imgbtn_removeroute);
+			// Remove route button
+			holder.imgbtn_removeRoute = (ImageButton) vi.findViewById(R.id.imgbtn_removeroute);
 			
-			holder.imgbtn_followRoute = (ImageButton) vi
-					.findViewById(R.id.imgbtn_followroute);
+			// Navigation mode button
+			holder.imgbtn_followRoute = (ImageButton) vi.findViewById(R.id.imgbtn_followroute);
 			
-			holder.imgbtn_schedule = (ImageButton) vi
-					.findViewById(R.id.imgbtn_schedule);
+			// Schedule view button
+			holder.imgbtn_schedule = (ImageButton) vi.findViewById(R.id.imgbtn_schedule);
 			
+			// TextView that holds the route title
 			holder.tv_routeName = (TextView) vi.findViewById(R.id.tv_routename);
-			
-			
+		
+			vi.setTag(holder);	// Setting the tag for this view as the holder
 
-			/************ Set holder with LayoutInflater ************/
-			vi.setTag(holder);
-//		} 
-//		else{
-//			System.out.println("This Guy!");
-//			holder = (ViewHolder) vi.getTag();
-//		}
-
+			
+			// If the data size is less than 1, then set the view to the activity
 		if (data.size() <= 0) {
 			ViewHolder tempHolder = new ViewHolder();
 			vi = new View(activity);
 			vi.setTag(tempHolder);
-		} 
-		
-		
+		}
+			// Otherwise, set the route title
 		else {
-	
-			/***** Get each Model object from Arraylist ********/
 			tempValues = null;
-			
-			// Error when removing the last element
 			tempValues = (Route) data.get(position);
-			//System.out.println(tempValues.getRouteTitle());
-
-			/************ Set Model values in Holder elements ***********/
-			
 			holder.tv_routeName.setText(tempValues.getRouteTitle());
-
-			// holder.text1.setText( tempValues.getUrl() );
-			// holder.image.setImageResource(
-			// res.getIdentifier(
-			// "com.androidexample.customlistview:drawable/"+tempValues.getImage()
-			// ,null,null));
-
-			/******** Set Item Click Listner for LayoutInflater for each row *******/
-
-//			vi.setOnClickListener(new OnItemClickListener(position));
-			//vi.setOnClickListener(this);
-			
-			
 		}
 		
-		// Trying to set the checkbox based on whether the route is clicked or not
+		// If the data size is bigger than 0, handle whether the checkbox is clicked or not
 		if(data.size() > 0){
+			// If the route is set as 'clicked' then set the checkbox to checked
 			if(data.get(position).isClicked()){
 				holder.cb_showRoute.setChecked(true);
 			}
+			// Otherwise, the route is not 'checked' and the checkbox should be empty
 			else{
 				holder.cb_showRoute.setChecked(false);
 			}
 		}
 		
+		// Each row in the listview can listen for clicks...
+		// When a row is clicked, it will toggle the checkbox and display the route
+		// On the map when the box is checked, and hide the route when unchecked
 		vi.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
+				// If the number of 'favorite' routes is greater than 0
 				if(data.size() > 0){
 				
 					// The first time this element of the listview is clicked, call this to make the call
-					// To get the shape and set the checkbox... This will populate the right fragment
-					if(data.get(position).getPolyLine() == null){
-						data.get(position).printRoute();
+					// To get the shape and set the checkbox.
+					if(data.get(position).getPolyLine() == null){	
 						
-						System.out.println("Setting Schedule stops for the first time!!!!");
-
-						// Setting that the route is currently clicked
-						data.get(position).setClicked(true);
-
-						//holder.cb_showRoute.setChecked(true);
-
-						// Used for MainActivity UI
-						//tempA.getShape(data.get(position));
-						
-						// Used for Tile UI
-						//maintile_activity.getShape(data.get(position));
-						
-	
-				        notifyDataSetChanged();
-
-
+						data.get(position).setClicked(true);	// Setting that the route is currently clicked
+				        notifyDataSetChanged();					// Update the adapter to show that the route has been clicked
 					}
 					
 				// After this element has been clicked, then this segment of the if/else will be called	
 					else{
 						
-						if(data.get(position).isClicked()){
+						// If the route is currently set as clicked, then uncheck the route and checkbox
+						if(data.get(position).isClicked()){				
 							
-							System.out.println("UnClicking!");
-					
-				// if (holder.cb_showRoute.isChecked()) {
-						holder.cb_showRoute.setChecked(false);
-						
-						data.get(position).setClicked(false);
-
-						//System.out.println("Hiding Route: " + data.get(position));
-					//routeActivity.hideRoute(data.get(position));
-						
-						
-						//data.get(position).getPolyLine().remove();
-						//data.get(position).getPolyLine().setVisible(false);
-						
-						// Hide the stops for that selected route
-						
-						data.get(position).hidePolyLine();
-						
-						// Used for MainActivity UI		
-						//routeActivity.hideStops(data.get(position));
-						
-						// Used for Tile UI
-						routeActivity_favorites.hideStops(data.get(position));
-						routeActivity_favorites.hideRoute(data.get(position));
-						
+							holder.cb_showRoute.setChecked(false);	// Uncheck the checkbox
+							data.get(position).setClicked(false);	// Set route to 'not clicked'
+							data.get(position).hidePolyLine();		// Hide the polyline for that selected route
 
 						
+							routeActivity_favorites.hideStops(data.get(position));	// Hide the stops of that given route
+							routeActivity_favorites.hideRoute(data.get(position));	// Clean up everything else and call 'hide route' method
+						
+							// If the clicked route has the 'Navigation Mode' set as true
 						if(data.get(position).isNavMode() == true){
-//							 tempA.mLayout.setPanelState(PanelState.COLLAPSED);
 							 
 							 CameraPosition cameraPosition = new CameraPosition.Builder()
-							    .target(data.get(position).getStops().get(0).getLatLng())      // Sets the center of the map to Mountain View
+							    .target(data.get(position).getStops().get(0).getLatLng())      // Moves to the first stop
 							    .zoom(15)                   // Sets the zoom
 							    .bearing(90)                // Sets the orientation of the camera to east
 							    .tilt(40)                   
 							    .build();                   // Creates a CameraPosition from the builder
-							tempA.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+							 
+							 // Animate the camera according to the above specifications
+							 maintile_activity.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 							
-
-							data.get(position).setNavMode(false);
+							data.get(position).setNavMode(false);	// Set the route to no longer be in 'Navigation Mode'
 							}
-						
-						// Used for MainActivity UI
-						//tempA.sched.removeRoutes(data.get(position));	// Remove the routes from the schedule fragment
-						
-						
-						// Need to implement this when I get the schedule up for Tile UI
 
-					} else {
-						System.out.println("Clicking!");
-
-						data.get(position).setClicked(true);
-
-						holder.cb_showRoute.setChecked(true);
+						}
 						
-						// Used for MainActivity UI
-						//routeActivity.showRoute(data.get(position));
+						// Otherwise, the route is not currently clicked
+						else {	
+							data.get(position).setClicked(true);	// Set the route to 'Clicked'
+							holder.cb_showRoute.setChecked(true);	// Set the checkbox to 'Checked'
 						
-						// Used for Tile UI
-						routeActivity_favorites.showRoute(data.get(position));
+							// Display the route and stops on the Google Map
+							routeActivity_favorites.showRoute(data.get(position));
+							routeActivity_favorites.showStops(data.get(position));
+						}
 						
-
-						
-						// Show the stops for that route
-						// Used for MainActivity UI
-						// routeActivity.showStops(data.get(position));
-						
-						// Used for Tile UI
-						routeActivity_favorites.showStops(data.get(position));
-
-						
-						// Used for MainActivity UI
-						// tempA.sched.setRoutes(data.get(position));	// Set the stops for the schedule fragment
-						
-						
-						
-						// DO NOT HAVE SCHEDULE SET UP YET FOR MAIN_TILE.... WILL NEED TO UNCOMMENT THIS ONCE IMPLEMENTED!!!
-						//Main_Tile.sched.setRoutes(data.get(position));	// Set the stops for the schedule fragment
-						
-						// Places the navigation panel into a collapsed state, which means it is no longer in "navigation mode"
-						// Used for MainActivity UI
-						//tempA.mLayout.setPanelState(PanelState.COLLAPSED);				
-
 					}
-					}
+					
 				}
 			}
 		});
@@ -348,162 +231,99 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 			@Override
 			public void onClick(View v) {
 				
-				System.out.println("Data Size: " + data.size());
-
+				// If there are 1 or more routes
 				if(data.size() >= 1){
-					System.out.println("Position: " + position + " Removing: " + data.get(position));						
-					//routeActivity.hideRoute(data.get(position));
-					//routeActivity.hideRoute(data.get(position));
 					
 					// If the polyline have been found for this route, then remove the routes					
 					if(data.get(position).getPolyLine() != null){
-						
-						// Hide the stops for that selected route
-						// Used for MainActivity UI
-//					routeActivity.hideStops(data.get(position));
-//					routeActivity.hideRoute(data.get(position));
-						
-						maintile_activity.hideRoute(data.get(position));
 
-						
-						// Used for Tile UI
-					routeActivity_favorites.hideStops(data.get(position));
-					routeActivity_favorites.hideRoute(data.get(position));
+						maintile_activity.hideRoute(data.get(position));		// Hide the route on the Map
+						routeActivity_favorites.hideStops(data.get(position));	// Hide the stops from the 'Favorites'
+						routeActivity_favorites.hideRoute(data.get(position));	// Hide the Route from the 'Favorites'
 					
-					
-					if(data.get(position).isNavMode() == true){
-						
-						 // Used for MainActivity UI
-						 //tempA.mLayout.setPanelState(PanelState.COLLAPSED);
-						 
-						 CameraPosition cameraPosition = new CameraPosition.Builder()
-						    .target(data.get(position).getStops().get(0).getLatLng())      // Sets the center of the map to Mountain View
-						    .zoom(15)                   // Sets the zoom
-						    .bearing(90)                // Sets the orientation of the camera to east
-						    .tilt(40)                   
-						    .build();                   // Creates a CameraPosition from the builder
-						 
-						 // Used for MainActivity UI
-//						tempA.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-						 
-						 // Used for Tile UI
-						 maintile_activity.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-						
-						 
-						data.get(position).setNavMode(false);
-						data.get(position).setClicked(false);
-						
-						
-
-						}
-					
-				
-					// If the Schedule contains the route and the fragment_schedule is already added,
-					// then Remove the route from the schedule fragment
-					if(maintile_activity.fragment_Schedule.isAdded()){
-						if(maintile_activity.fragment_Schedule.adapter.routeHolder.contains(data.get(position))){
+						// If the Route is currently in 'Navigation Mode'
+						if(data.get(position).isNavMode() == true){
+							 
+							// Zoom the camera out once the route has been removed
+							 CameraPosition cameraPosition = new CameraPosition.Builder()
+							    .target(data.get(position).getStops().get(0).getLatLng())      // Sets the center of the map to Mountain View
+							    .zoom(15)                   // Sets the zoom
+							    .bearing(90)                // Sets the orientation of the camera to east
+							    .tilt(40)                   
+							    .build();                   // Creates a CameraPosition from the builder
+							 
+							 // Animate the camera according to the above specifications
+							 maintile_activity.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 							
-							maintile_activity.fragment_Schedule.removeRoutes(data.get(position));
+							 
+							data.get(position).setNavMode(false);	// Set the route to no longer be in 'Navigation Mode'
+							data.get(position).setClicked(false);	// Set the route to 'Not Clicked'
+							}
+						
+					
+						// If the Fragment 'Schedule' is currently added
+						if(maintile_activity.fragment_Schedule.isAdded()){
+							
+							// Then remove the route from the fragment 'Schedule'
+							if(maintile_activity.fragment_Schedule.adapter.routeHolder.contains(data.get(position))){
+								maintile_activity.fragment_Schedule.removeRoutes(data.get(position));
+							}
 						}
-					}
-					// Used for Tile UI
-					routeActivity_favorites.removeRouteFromFav(data.get(position));
-										
-					
-					
-					//MainActivity tempA = (MainActivity) activity;
-
-					
-				//data.remove(position);
-				System.out.println("Data Size After Removed: " + data.size());
-
-		        notifyDataSetChanged();
-					}
-					else{
 						
 						
-						// Used for MainActivity UI
-//						routeActivity.removeRouteFromFav(data.get(position));
-//						 tempA.mLayout.setPanelState(PanelState.COLLAPSED);
-
-						// Used for Tile UI
+						// Remove the route from the Fragment 'Favorites'
 						routeActivity_favorites.removeRouteFromFav(data.get(position));
+	
+						// Update the adapter to reflect the removed route
+						notifyDataSetChanged();	
+						}
 						
-						System.out.println("Can't remove the stops since the route was never clicked");
-
-					}
+					// Otherwise, the polyline is null and remove the route from the fragment 'Favorites'
+					else{
+						routeActivity_favorites.removeRouteFromFav(data.get(position));
+					}		
 				}
-				
 				
 			}
 		});
 	    
-	    // When the user clicks the location marker icon, it will trigger a gps view where it animates the camera to follow along
-	    // The route
+	    
+	    // When the user clicks the location marker icon, it will trigger a gps view where 
+	    // it animates the camera to follow along route
 	    holder.imgbtn_followRoute.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				
-
+				// If the number of routes is greater than 0
 				if(data.size() >= 1){
 					
+					// Loop through all the routes
 					for(int i = 0; i < data.size(); i++){
-						if(i != position){
-							
-							System.out.println("Not the clicked route: " + i);
-							
+						
+						// If iterator is not equal to the clicked route position,
+						// then set all the rest of the routes unchecked, and remove nav mode
+						if(i != position){					
 							if(data.get(i).isClicked() && data.get(i).getPolyLine() != null){
 								
-								// Used for MainActivity UI
-//							data.get(i).hideStops(tempA.googleMap);
-							
-								// Used for Tile UI
 							data.get(i).hideStops(maintile_activity.googleMap);
-
 							data.get(i).hidePolyLine();
 							holder.cb_showRoute.setChecked(false);
 							data.get(i).setClicked(false);
 							data.get(i).setNavMode(false);
 							}
 						}
+						// Otherwise, set the route as 'clicked', 'Navigation mode true'
 						else{
-							System.out.println("Clicked route: " + i);
 							holder.cb_showRoute.setChecked(true);
 							data.get(position).setClicked(true);
 							
 							// Boolean NavMode is used to set the camera for navigation mode by placing the camera
-							// Calls in connect_shape which is done on postexecute
 							data.get(position).setNavMode(true);
-					
-							// Used for MainActivity UI
-							//tempA.getShape(data.get(position));
-							
-							// Used for Tile UI
-							//maintile_activity.getShape(data.get(position));
-
-							
 							setNavRoute(data.get(position));
 							
-					        notifyDataSetChanged();
-					        
-
-					        System.out.println("Going to navigation mode!");
-					        
-					        
-					        // Used for MainActivity UI
-//					        if (tempA.mDrawerlayout.isDrawerVisible(tempA.mDrawerList_Left)) {
-//								tempA.mDrawerlayout.closeDrawer(tempA.mDrawerList_Left);
-//							}
-							
-							//routeActivity.showRoute(data.get(position));
-
-							
-							// Show the stops for that route
-							//routeActivity.showStops(data.get(position));
-							
-							//tempA.sched.setRoutes(data.get(position));	
-							
+					        notifyDataSetChanged();	// Update the adapter
+					    
 				
 					    	// Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
 							CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -514,55 +334,20 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 							    .build();                   // Creates a CameraPosition from the builder
 							maintile_activity.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 							
-							//Null Pointer here
+							// Show the first stop's info on the map
 							data.get(i).getStops().get(0).getMarker().showInfoWindow();
 					        
-						 
-						 // Sets the bottom panel to pop up into an achored state which is "Navigation Mode"
-					     // Used for MainActivity UI
-							
-						// maintile_activity.mLayout.setPanelState(PanelState.ANCHORED);
-							
-							
-
 						}
 					}
 						
 					}
 					
-					// Move google maps to the starting route position
-					//tempA.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(data.get(position).getStops().get(0).getLatLng(), 16));
-					
-					
 					// If the pressed route has more than 0 stops, then set the camera to follow that route... Used to prevent null pointer errors
 					if( data.get(position).getPolyLine() != null){
-						System.out.println("Going to navigation mode!");
 						
-						
-						// Used for MainActivity UI
-//						routeActivity.showRoute(data.get(position));
-						
-						// Used for Tile UI
 						routeActivity_favorites.showRoute(data.get(position));
 
-						
-						// Show the stops for that route
-						// Used for MainActivity UI
-//						routeActivity.showStops(data.get(position));
-						
-						// Used for Tile UI
-						routeActivity_favorites.showStops(data.get(position));
-
-						
-						
-						// Used for MainActivity UI
-//						tempA.sched.setRoutes(data.get(position));	
-						
-						// Used for Tile UI... Schedule needs to be implemented first!
-//						maintile_activity.sched.setRoutes(data.get(position));	
-
-						
-						
+						routeActivity_favorites.showStops(data.get(position));	
 					
 					// Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
 					CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -572,59 +357,51 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 					    .tilt(80)                   // Sets the tilt of the camera to 30 degrees
 					    .build();                   // Creates a CameraPosition from the builder
 					
-					// Used for MainActivity UI
-//					tempA.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-					
-					// Used for Tile UI
+					// Animate the camera according to the above specifications
 					maintile_activity.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-					
-					
+						
+					// Set the route for the Navigation Fragment
 					maintile_activity.fragment_Navigator.setRoute(data.get(position));
 					
-					//Null Pointer here
-					 data.get(position).getStops().get(0).getMarker().showInfoWindow();
-					 
-					 // Will have to change the panel to a GPS panel.... Possibly use a fragment
-//					 maintile_activity.mLayout.setPanelState(PanelState.COLLAPSED);
-					 
-					 
-					 maintile_activity.hideFavorites();
-					 
-					 // Used for MainActivity UI
-//					 tempA.mLayout.setPanelState(PanelState.ANCHORED);
-					 
+					// Display the first stop's info on the map
+					data.get(position).getStops().get(0).getMarker().showInfoWindow();
 
-					
-				//data.remove(position);
-
-		       // notifyDataSetChanged();
+					// Hide the Favorites Fragment, so it does not overlap the Navigation fragment
+					 maintile_activity.hideFavorites(); 
 				}
+					// Show the Navigation Fragment at the bottom of the screen
 					maintile_activity.showNavigation();
 				
 				}
 			
 		});
 	    
+	    // Handles when the user clicks the 'Schedule' button
 	    holder.imgbtn_schedule.setOnClickListener(new OnClickListener() {
-			
-	    	// May need to reference the main_fragmentgroup somehow if I get an error
-	    	
+				    	
 			@Override
 			public void onClick(View v) {
+				// Handles Fragment's moving around
 				FragmentTransaction ft = maintile_activity.manager.beginTransaction();
 				
-				ft.remove(routeActivity_favorites);
-				ft.add(R.id.fragment_group_tile, maintile_activity.fragment_Schedule);
-				ft.addToBackStack("Schedule");
+				// Remove the 'Favorites' fragment, and displays the 'Schedule' fragment
+				ft.remove(routeActivity_favorites);	// Remove the 'Favorites' Fragment
+				ft.add(R.id.fragment_group_tile, maintile_activity.fragment_Schedule);	// Adds 'Schedule' Fragment
+				ft.addToBackStack("Schedule");	// Schedule Fragment is now on the stack, so the back button will remove it
 				ft.commit();
 				
+				// Set the 'Schedule' Fragment's list view information size
 				maintile_activity.fragment_Schedule.lv_arr = new String[maintile_activity.fragment_Routes.clickedRoute.getStops().size()];
 				
+				// Set the stop descriptions for each Stop on the 'Schedule'
 				for(int i = 0; i < maintile_activity.fragment_Routes.clickedRoute.getStops().size(); i++){
 					maintile_activity.fragment_Schedule.lv_arr[i] = maintile_activity.fragment_Routes.clickedRoute.getStops().get(i).getStopDescription();
 				}
 				
+				// Set the clicked route
 				maintile_activity.fragment_Schedule.tempRoute = maintile_activity.clickedRoute;
+				
+				// Hide the image button that toggles the 'Schedule' fragment
 				maintile_activity.imgbtn_SchedulePopup.setVisibility(View.GONE);
 			}
 		});
@@ -633,16 +410,18 @@ public class CustomAdapter extends BaseAdapter implements OnClickListener {
 		
 	}
 
+	// Handles clicking the view
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 
 	}
 
+	// Returns the route that is currently in 'Navigation Mode'
 	public Route getNavRoute() {
 		return navRoute;
 	}
 
+	// Set the route that is in 'Navigation Mode'
 	public void setNavRoute(Route navRoute) {
 		this.navRoute = navRoute;
 	}

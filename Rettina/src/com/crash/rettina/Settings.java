@@ -1,3 +1,17 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * Settings is a fragment used to allow the user to set their desired settings for the app
+ * This Fragment has not yet been completed and will be completed in the future. This is
+ * simply a placeholder right now and can only display the layout
+ */
+
+
 package com.crash.rettina;
 
 import android.app.Fragment;
@@ -8,10 +22,10 @@ import android.view.ViewGroup;
 
 public class Settings extends Fragment {
 	
-	public Main_Tile main_Tile;
+	public Main main_Tile;
 	
 	// Constructor
-	public Settings(Main_Tile mt){
+	public Settings(Main mt){
 		main_Tile = mt;
 	}
 	

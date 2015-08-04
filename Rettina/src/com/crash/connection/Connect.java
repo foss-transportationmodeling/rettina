@@ -10,318 +10,100 @@
  * and getShape().  There are plans to also develop methods for getVehicles() so the vehicles can be tracked in real time
  */
 
-/*
- * To Do
- * 1. Create getVehicles() method
- * 2. Double check the screen corner GPS coordinates
- * 3. Optimize code/connection
- */
-
 package com.crash.connection;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.AsyncTask;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
 
-import com.crash.rettina.MainActivity;
-import com.crash.rettina.Main_Tile;
-import com.crash.rettina.RouteMenu;
-import com.crash.rettina.ServiceHandler;
+import com.crash.rettina.Main;
+import com.crash.connection.ServiceHandler;
 import com.crash.routeinfo.Route;
-import com.crash.routeinfo.Stop;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.Projection;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.VisibleRegion;
 
 public class Connect extends AsyncTask<Void, Void, Void> {
 
-	private ProgressDialog pDialog;
+	// The main activity... Everything is connected activity_tile
+	public Main activity_tile;
 
-	// private ArrayList<Route> routes;
-
-	// Variables to hold the coordinates of the NorthEast and SouthWest corners
-	// of the screen
-	// They are set by calling getScreenCornerCoordinates()
-	private LatLng southWest;
-	private LatLng northEast;
-
-	public MainActivity activity;
-	public Main_Tile activity_tile;
-
-	public RouteMenu routeMenu;
+	// Holds the coordinates of the corners of the screen when the user is viewing the Google Map
 	public double north, east, west, south;
 
+	// Used to pass information to the Main_Tile activity
 	private Context c;
 	private GoogleMap map;
 
+	// Used for connecting to the server
 	private String sh_Routes;
-	
-	private ArrayList<LatLng> tempPolyPoints = new ArrayList<LatLng>();
-
 	private ServiceHandler sh;
-
-	public Connect(MainActivity a, GoogleMap m, RouteMenu rm) {
-		this.activity = a;
-		routeMenu = rm;
-		map = m;
-	}
-
-	public Connect(MainActivity a, GoogleMap m) {
-		this.activity = a;
-		// routeMenu = rm;
-		map = m;
-	}
 	
-	// This constructor is created to be compatible with the Main_Tile UI
-	public Connect(Main_Tile a, GoogleMap m) {
-		activity_tile = a;
-		map = m;
+	// Constructor
+	public Connect(Main a, GoogleMap m) {
+		activity_tile = a;		// The Main activity... All fragments and connections are linked to the Main actvity
+		map = m;				// Allows to work with the GoogleMap on the Main activity
 	}
 
-	/*
-	 * Async task class to get json by making HTTP call
-	 */
+	
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		
-		
-		// Showing progress dialog
-		// pDialog = new ProgressDialog(c);
-		// pDialog.setMessage("Please wait...");
-		// pDialog.setCancelable(false);
-		// pDialog.show();
-//		getScreenCornerCoordinates();
-
 	}
 
+	// Gets all the routes that fall within the corner of the screen's coordinates
 	@Override
 	protected Void doInBackground(Void... arg0) {
-		// Creating service handler class instance
-		// ServiceHandler sh = new ServiceHandler();
-		
-		
-		
+
 		getRoutes();
-		
-		//getRoutes_Test(); // <--- Static data call... Needs to be switched when the server is back on
-
-
 		return null;
 	}
 
+	// Once the routes have been retrieved from the server, update the other fragments with the new routes
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
-		// getScreenCornerCoordinates();
-		
-		
-		// Commented so Tile UI can work
-	//	routeMenu.setRouteData();
 		
 		activity_tile.updateRoutes();
-		activity_tile.fragment_Routes.searching(false); // Sets searching to be true, so the default searching text will be displayed
-		activity_tile.fragment_Routes.tv_searching.setVisibility(View.GONE);
-
+		activity_tile.fragment_Routes.searching(false); 						// Sets searching to be false, so the default searching text will be displayed
+		activity_tile.fragment_Routes.tv_searching.setVisibility(View.GONE);	// Hides the 'Searching' text that alerts the user when searching for routes
 	}
 
-	public void getVehicles() {
-
-	}
-
-//	public void getStops(Route r) {
-//		ServiceHandler sh = new ServiceHandler();
-//
-//		// Making the connection to grab all the stops based on the TripID...
-//		// Temporary: Right now I am just using the first element of the TripID
-//		// ArrayList
-//		// But this will change when the user will specify which trip they want
-//		// based on the
-//		// Time of day
-//
-//		String sh_Routes = sh.makeServiceCall(
-//				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),
-//				ServiceHandler.GET);
-//		if (sh_Routes != null) {
-//			try {
-//				JSONObject jsonObj = new JSONObject(sh_Routes);
-//				JSONArray jsonArray = jsonObj.getJSONArray("stops");
-//
-//				// looping through All Contacts
-//				for (int i = 0; i < jsonArray.length(); i++) {
-//
-//					JSONObject tempObj = jsonArray.getJSONObject(i);
-//
-//					LatLng lat_lng = new LatLng(Double.parseDouble(tempObj.get(
-//							"stop_lat").toString()), Double.parseDouble(tempObj
-//							.get("stop_lon").toString()));
-//					Stop tempStop = new Stop(
-//							r.getRouteID(),
-//							Integer.parseInt(tempObj.get("stop_id").toString()),
-//							(tempObj.get("stop_name").toString()), lat_lng);
-//
-//					r.addStop(tempStop);
-//				}
-//
-//				// System.out.println("First Stop: " +
-//				// r.getStops().get(0).getStopDescription());
-//
-//			} catch (JSONException e) {
-//				e.printStackTrace();
-//			}
-//		} else {
-//			Log.e("ServiceHandler", "Couldn't get any data from the url");
-//		}
-//
-//	}
-
-	public void getShape(Route r) {
-		ServiceHandler sh = new ServiceHandler();
-
-		// Making the connection to grab all the stops based on the TripID...
-		// Temporary: Right now I am just using the first element of the TripID
-		// ArrayList
-		// But this will change when the user will specify which trip they want
-		// based on the
-		// Time of day
-
-		// For some reason Blue Line and probably some others only have a couple
-		// stops in some of there trips..
-		// Using arrayLocation 5 for temporary in order to get all the stops
-		// since location 0 doesn't have them all...
-		String sh_Routes = sh.makeServiceCall(
-				"http://137.99.15.144/shapes?trip_id=" + r.getTripIDs().get(5),
-				ServiceHandler.GET);
-
-		System.out.println("http://137.99.15.144/shapes?trip_id="
-				+ r.getTripIDs().get(5));
-		if (sh_Routes != null) {
-			try {
-				JSONObject jsonObj = new JSONObject(sh_Routes);
-				JSONArray jsonArray = jsonObj.getJSONArray("shapes");
-
-				// looping through All Contacts
-				for (int i = 0; i < jsonArray.length(); i++) {
-
-					JSONObject tempObj = jsonArray.getJSONObject(i);
-
-					LatLng tempLatLng = new LatLng(Double.parseDouble(tempObj
-							.get("shape_pt_lat").toString()),
-							Double.parseDouble(tempObj.get("shape_pt_lon")
-									.toString()));
-
-					tempPolyPoints.add(tempLatLng);
-
-				}
-
-				r.setPolyLineOptions(drawPrimaryLinePath(tempPolyPoints,
-						r.getColor()));
-
-				// System.out.println("First Stop: " +
-				// r.getStops().get(0).getStopDescription());
-
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		} else {
-			Log.e("ServiceHandler", "Couldn't get any data from the url");
-		}
-
-	}
-
+	// Gets all the routes that fall within the coordinates of the corner of the screen when viewing the map
 	public void getRoutes() {
+		
+		// Grabs the coordinates of the corner of the screen, and makes the 
+		// API request with this information, retrieving all the routes within the coordinates
+		getScreenCornerCoordinates();	
 
-//		System.out.println("http://137.99.15.144/routes?lat1=" + activity_tile.north
-//				+ "&lat2=" + activity_tile.south + "&lon1=" + activity_tile.east + "&lon2=" + activity_tile.west
-//				+ "&time=9:00:00");
 
-//		ServiceHandler sh = new ServiceHandler();
-
-		// String sh_Routes = sh.makeServiceCall(
-		// "http://137.99.15.144/routes?lat1=" + north + "&lat2=" + south
-		// + "&lon1=" + east + "&lon2=" + west + "&time=9:00:00",
-		// ServiceHandler.GET);
-
-		// Using this call instead of filling in the GPS parameters because I
-		// could not get any routes to show up
-		// When inputting the Lat/Long/Time
-	
-		String t1 = "00:00:00";
-		String t2 = "23:59:00";
-		
-		
-		
-		// Changed it so I do the service call from this method... This is so the long closest to 0 can be placed last which should
-		// Fix the get routes problem
-//		getScreenCornerCoordinates();
-		
-		
-		
-//		String sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.east +"&lat2=" + activity_tile.west + 
-//				"&lon1=" + activity_tile.north + "&lon2=" + activity_tile.south + "&start=" + t1 + "&stop=" + t2 + "&next=" + "8",
-//				ServiceHandler.GET);
-		
-		
-		getScreenCornerCoordinates();
-		
-//		String sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes",  // This is the new api call... Using Meriden for now
-//				ServiceHandler.GET);
-		
-
+		// If there are routes found by the server, then loop through the results and add
+		// the found routes to the 'Routes' which is found in the Main activity..('activity_tile')
 		if (sh_Routes != null) {
 			try {
-				System.out.println("In here");
-				// JSONArray jsonArray = new JSONArray(sh_Routes);
 				JSONObject jsonObj = new JSONObject(sh_Routes);
 				JSONArray jsonArray = jsonObj.getJSONArray("routes");
 
-				// jsonObj.getJSONObject("route_long_name");
-
-				// JSONArray jsonArray = jsonObj.getJSONArray("");
-
-				// looping through All Contacts
+				// looping through the entire JSON results
 				for (int i = 0; i < jsonArray.length(); i++) {
 
 					JSONObject tempObj = jsonArray.getJSONObject(i);
 
-					// System.out.println(tempObj.get("route_long_name"));
-					// System.out.println(tempObj.get("route_id"));
-					// System.out.println(tempObj.get("route_long_name"));
-					// System.out.println("Color: " +
-					// tempObj.get("route_text_color"));
-
-					// System.out.println("TripID's: " +
-					// tempObj.getJSONArray("trip_ids"));
-
-//					Route tempRoute = new Route(Integer.parseInt(tempObj.get(
-//							"route_id").toString()));
-					
+					// Create a temporary route to hold all the route information
 					Route tempRoute = new Route(tempObj.get(
 							"route_id").toString());
 
+					// Set the route title for this route
 					tempRoute.setRouteTitle(tempObj.get("route_long_name")
 							.toString());
 
+					// Set the color of the route.. (Used for the route's polyline)
 					tempRoute.setColor(tempObj.get("route_text_color")
 							.toString());
 
@@ -334,40 +116,22 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 
 					// Goes through all the already found routes, checking to see if the current "new" route is actually a duplicate
 					// If it is a duplicate, it sets the boolean to true and will not add the route
-
-					
-					
-					// Need to make the duplicate route check for each route if it is a duplicate... And only add ones
-					// That are not the duplicate... This is important because the user may shift the camera a little
-					// To add in a few more routes but the rest would be duplicates
-					
-					
 					// Checks the new Temporary route against all the existing routes to see if it is a duplicate route
 					for (int z = 0; z < activity_tile.routes.size(); z++) {
+						
+						// If a duplicate route, then set the boolean to true and do not add the route
 						if (tempRoute.getRouteID().equals(activity_tile.routes.get(z)
 								.getRouteID())) {
 							duplicateRoute = true;
 						}
 
 					}
-					
 
+					// If it is not a duplicate route, then add the tempRoute to 'Routes' found in activity_tile
 					if (duplicateRoute == false) {
 
 						// Looping through the Trip ID's found in the JSON Call
-						// and
-						// setting the TripID's
-						// For that given route. Need to set the TripID's
-						// because
-						// retrieving all the associated
-						// Stops as well as other information is tied to the
-						// TripID
-
-						// Performance is slow.. need to make it so when a route
-						// is
-						// clicked it will get the stops
-						// Not get the stops and routes all at once...
-
+						// and setting the TripID's for that given route
 						for (int z = 0; z < tempObj.getJSONArray("trip_ids")
 								.length(); z++) {
 
@@ -375,20 +139,11 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 											.get(z).toString());
 						}
 
-
-						// Commented out so Tile UI can work
-					//	activity.routes.add(tempRoute);
-						
-						// This is compatible with the Main_Tile UI
 						activity_tile.routes.add(tempRoute);
-
-//						System.out.println("Routes Size: "
-//								+ activity.routes.size());
 
 					} 
 					// Route was a duplicate so report the error
 					else {
-						
 						System.out.println("This is a duplicate Route!!!!");
 					}
 
@@ -402,180 +157,33 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 
 	}
 	
-	public void getRoutes_Test() {
-		ServiceHandler sh = new ServiceHandler();
 
-		String sh_Routes = sh.makeServiceCall("http://137.99.15.144/static/routes.json",
-				ServiceHandler.GET);
-
-		if (sh_Routes != null) {
-			try {
-				JSONObject jsonObj = new JSONObject(sh_Routes);
-				JSONArray jsonArray = jsonObj.getJSONArray("routes");
-
-
-				// looping through All Contacts
-				for (int i = 0; i < jsonArray.length(); i++) {
-
-					JSONObject tempObj = jsonArray.getJSONObject(i);
-
-					Route tempRoute = new Route(tempObj.get(
-							"route_id").toString());
-
-					tempRoute.setRouteTitle(tempObj.get("route_long_name")
-							.toString());
-
-					tempRoute.setColor(tempObj.get("route_text_color")
-							.toString());
-
-					
-				//// ERROR PROTECTION: CHECKS FOR DUPLICATE ROUTES ////
-					
-					// DuplicateRoute is used to ensure a route is not added
-					// twice, which would cause problems... This is based off of the routeID, which is unique to each route
-					boolean duplicateRoute = false;
-
-					// Goes through all the already found routes, checking to see if the current "new" route is actually a duplicate
-					// If it is a duplicate, it sets the boolean to true and will not add the route
-					for (int z = 0; z < activity.routes.size(); z++) {
-						if (tempRoute.getRouteID() == activity.routes.get(z)
-								.getRouteID()) {
-							duplicateRoute = true;
-						}
-
-					}
-
-					if (duplicateRoute == false) {
-
-						// Looping through the Trip ID's found in the JSON Call
-						// and
-						// setting the TripID's
-						// For that given route. Need to set the TripID's
-						// because
-						// retrieving all the associated
-						// Stops as well as other information is tied to the
-						// TripID
-
-						// Performance is slow.. need to make it so when a route
-						// is
-						// clicked it will get the stops
-						// Not get the stops and routes all at once...
-
-						for (int z = 0; z < tempObj.getJSONArray("trip_ids")
-								.length(); z++) {
-
-							tempRoute.addTripID(
-									tempObj.getJSONArray("trip_ids")
-											.get(z).toString());
-						}
-
-						// This may be a temporary call depending on the
-						// performance
-						// we achieve... This will get all the stops
-						// For each route even though we do not need the stop
-						// information until that route has been selected
-						// and moved to the favorites section....
-
-						// These calls are too expensive, this is doing a
-						// connection
-						// on every single route
-
-						// getStops(tempRoute);
-						// getShape(tempRoute);
-
-						
-						activity.routes.add(tempRoute);
-
-						System.out.println("Routes Size: "
-								+ activity.routes.size());
-
-					} 
-					// Route was a dupicate so report the error
-					else {
-						System.out.println("This is a duplicate Route!!!!");
-					}
-
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		} else {
-			Log.e("ServiceHandler", "Couldn't get any data from the url");
-		}
-
-	}
-
-	// Draw route line
-	private PolylineOptions drawPrimaryLinePath(
-			ArrayList<LatLng> listLocsToDraw, int c) {
-
-		PolylineOptions options = new PolylineOptions();
-
-		options.color(c);
-		options.width(7);
-		options.visible(true);
-
-		for (LatLng locRecorded : listLocsToDraw) {
-			options.add(locRecorded);
-		}
-
-		// map.addPolyline(options);
-		// System.out.println("Temp Poly size: " + options.getPoints().size());
-
-		return options;
-
-	}
-
-	// This method gets the latitude and longitude of the northeast and
-	// southwest coordinates of the screen
-	// When viewing the GoogleMap
+	// This method gets the latitude and longitude of the northeast and southwest coordinates of the 
+	// screen when viewing the GoogleMap, then makes a call to the server to return all routes that 
+	// fall within these coordinates
 	public void getScreenCornerCoordinates() {
-		
-//		LatLngBounds llBounds = map.getProjection().getVisibleRegion().latLngBounds;
-//		southWest = llBounds.southwest;
-//		northEast = llBounds.northeast;
-//
-//		north = northEast.latitude;
-//		south = southWest.latitude;
-//		east = northEast.longitude;
-//		west = southWest.longitude;
-//
-//		System.out.println("NorthEast: " + northEast + " SouthWest: "
-//				+ southWest);
-//		
-		sh = new ServiceHandler();
+			
+		// Used for connecting to the server
+		sh = new ServiceHandler();	
 
+		// Formats the time so it can be properly read by the server
 		SimpleDateFormat localDateFormat = new SimpleDateFormat("hh:mm:ss");
 		
 		
-		// Need to make it so the second longitude is the one that is closest to 0
+		// Makes the call to the server with the corner of the screen coordinates as well as the current formatted time
+		
+		// Need to make it so the second longitude is the one that is closest to 0 in order for the server to return correct values
 		if(Math.abs(east) > Math.abs(west)){
-			System.out.println("first one");
 			sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.north +"&lat2=" + activity_tile.south + 
 			"&lon1=" + activity_tile.east + "&lon2=" + activity_tile.west + "&start=" + localDateFormat.format(new Date()),
 			ServiceHandler.GET);
 		}
 		else{
-			System.out.println("second one");
-
 			sh_Routes = sh.makeServiceCall("http://137.99.15.144/routes?lat1="+activity_tile.south +"&lat2=" + activity_tile.north + 
 			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east  + "&start=" + localDateFormat.format(new Date()),
 			ServiceHandler.GET);
 		}
 
-
-		System.out.println("http://137.99.15.144/routes?lat1="+activity_tile.south +"&lat2=" + activity_tile.north + 
-			"&lon1=" + activity_tile.west + "&lon2=" + activity_tile.east  + "&start=" + localDateFormat.format(new Date()));
 	}
-
-	// public void setStopMarkers(){
-	// for(int i = 0; i < stops.size(); i++){
-	// Marker temp = map.addMarker(new MarkerOptions()
-	// .position(null).title(
-	// ""));
-	//
-	// stops.get(i).setMarker(temp);
-	// }
-	// }
 
 }

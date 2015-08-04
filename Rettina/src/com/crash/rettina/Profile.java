@@ -1,3 +1,5 @@
+// Not currently being used... Possibly implemented in the future
+
 package com.crash.rettina;
 
 import android.app.Activity;

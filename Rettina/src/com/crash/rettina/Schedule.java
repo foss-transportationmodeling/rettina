@@ -10,11 +10,6 @@
  * as scheduled times.  There are plans to develop real time expected bus arrival times for each stop
  */
 
-/*
- * To Do
- * 1. Fix up bugs... Lots of crashes/things do not update correctly
- * 2. Route names do not display correctly... When routes are removed or new ones are created, they are in the wrong spot etc.
- */
 
 package com.crash.rettina;
 
@@ -42,89 +37,78 @@ import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
 
 public class Schedule extends Fragment {
-	public ArrayList<Stop> stops = new ArrayList<Stop>();
-	// public ArrayList<String> stopNames = new ArrayList<String>();
+	
+	Main main_Tile;			// Used to establish communication with the Main activity
+	Schedule sched;			// Holds the Schedule Fragment
 
-	public Route tempRoute;
+	final int N = 10; 		// total number of textviews to add
+	
+	public String[] lv_arr;	// Used to set the dot positions and the height of the seekbar
 
-	public MyListAdapter adapter;
-	// public ListView lv;
+	public Route tempRoute;	// Used to set the routes for the 'Schedule'
 
-//	private TextView tv;
-	public VerticalSeekBar seekbar;
+	public MyListAdapter adapter;	// The adapter used for the Listview
 
-	final int N = 10; // total number of textviews to add
+	public VerticalSeekBar seekbar;	// The seekbar that shows the progress of the vehicle
+	
+	private ImageButton imgbtn_closeSchedule;	// The 'x' button to close the Schedule fragment
+	public ListView lv_stopnames, lv_stoptimes;	// The Listviews for the stop names and stop times
 
 	final TextView[] myTextViews = new TextView[N]; // create an empty array;
-	public String[] lv_arr;
+	public ArrayList<Stop> stops = new ArrayList<Stop>();
 
-	Main_Tile main_Tile;
-	public ListView lv_stopnames, lv_stoptimes;
-
-	Schedule sched;
 	private static final int UNBOUNDED = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 	
-	private ImageButton imgbtn_closeSchedule;
-
-
 	@SuppressLint("Instantiatable")
-	public Schedule(Main_Tile mt) {
+	public Schedule(Main mt) {
 		main_Tile = mt;
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		// View view = inflater.inflate(R.layout.schedule, container, false);
 
-		// VerticalSeekBar verticalSeekBar = new VerticalSeekBar(main_Tile);
-
+		// Inflate the Schedule fragment with customschedule.xml
 		View view = inflater.inflate(R.layout.customschedule, container, false);
 		sched = this;
-
-		// RelativeLayout rl = (RelativeLayout)
-		// view.findViewById(R.id.verticalseek_relativelayout);
-
+		
 		super.onCreate(savedInstanceState);
-//		tv = (TextView) view.findViewById(R.id.tv_value);
 		
+		// Create the seekbar 
 		seekbar = new VerticalSeekBar(sched);
-		seekbar = (VerticalSeekBar) view.findViewById(R.id.seekbar);
-		// tv.setText(String.valueOf(seekbar.getProgress()) + "/" +
-		// String.valueOf(seekbar.getMax()));
-
-		lv_stopnames = (ListView) view.findViewById(R.id.lv_stopnames);
-//		lv_stoptimes = (ListView) view.findViewById(R.id.lv_stoptimes);
 		
+		// Set the resource for the seekbar
+		seekbar = (VerticalSeekBar) view.findViewById(R.id.seekbar);
+	
+		// Set the resources for the listview and the close button
+		lv_stopnames = (ListView) view.findViewById(R.id.lv_stopnames);
 		imgbtn_closeSchedule = (ImageButton) view.findViewById(R.id.imgbtn_closeschedule);
 
+		// Set the max for the seekbar as 100
 		seekbar.setMax(100);
-//		 seekbar.setDots(new int[] {0, 150, 300, 450});
 
-
+		// Handle the seekbar clicking.. Removed all clicking actions
+		// So the user can not adjust the seekbar
 		seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-				// tv.setText(String.valueOf(seekbar.getProgress()) + "/" +
-				// String.valueOf(seekbar.getMax()));
+
 			}
 
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
-				// TODO Auto-generated method stub
 
 			}
 		});
 
+		// Create the adapter and set the listview adapter
 		adapter = new MyListAdapter(getActivity(), stops);
-		
 		lv_stopnames.setAdapter(adapter);
 
 		
@@ -133,124 +117,54 @@ public class Schedule extends Fragment {
 //		seekbar.setDotsDrawable(R.drawable.abc_btn_radio_to_on_mtrl_000);
 		
 				
-
-		// Commenting out to see if this fixes the schedule issue
+		// If there is a temporary route, then call the setRoutes() method
 		if (tempRoute != null) {
 			setRoutes(tempRoute);
 		}
 		
-
-		
-
+		// Handles the close schedule button.... If this button is clicked,
+		// then hide/remove the Schedule fragment
 		imgbtn_closeSchedule.setOnClickListener(new View.OnClickListener() {
 		
-		 @Override
-		 public void onClick(View v) {
-		
-		
-		 // FragmentTransaction ft = main_Tile.manager.beginTransaction();
-		 // ft.remove(sched);
-		 // ft.commit();
-		
-		 // main_Tile.manager.beginTransaction().remove(sched).commit();
-			
-		
-		 main_Tile.hideSchedule();
-		
-		 }
+			 @Override
+			 public void onClick(View v) {
+			 main_Tile.hideSchedule();
+			 }
 		 });
 		
-//		SeekSetDotPosition(lv_arr.length);
-		
-		if (sched.isVisible()) {
-
-			main_Tile.tabhost.getTabWidget().getChildAt(0)
+			// If the Schedule fragment is visible, then handle the tabhost clicking
+			if (sched.isVisible()) {
+				
+				// If the seraching tab is clicked
+				main_Tile.tabhost.getTabWidget().getChildAt(0)
 					.setOnClickListener(new View.OnClickListener() {
 
 						@Override
 						public void onClick(View v) {
-
-							System.out.println("Clicking search!");
-
+							// If the current tab is 0, then set the hidden tab as hidden
+							// and remove the Schedule fragment
 							if (main_Tile.tabhost.getCurrentTab() == 0
 									&& v.getTag().equals(0)) {
 
-								// Set for new Nav Fragment
-								// main_Tile.mLayout.setPanelState(PanelState.COLLAPSED);
-
 								main_Tile.tabhost.setCurrentTab(3);
-
-								// if(clickedRoute != null &&
-								// clickedRoute.getPolyLine().isVisible()){
-								// hideStops(clickedRoute);
-								// hideRoute(clickedRoute);
-								// }
-								//
-//								if (sched.isVisible()) {
+								
 									FragmentTransaction ft = main_Tile.manager
 											.beginTransaction();
 									ft.remove(sched);
 									ft.commit();
-									
-									
-//								}
-
 							}
-							// else{
-							//
-							// if(main_Tile.tabhost.getCurrentTab() == 1 &&
-							// main_Tile.fragment_Favorites.isVisible()){
-							// // Need to make it so it only connects when
-							// unique routes will be shown, otherwise, it will
-							// just be
-							// // Doing more work by getting the same routes
-							// over and over whenver search is clicked
-							//
-							// FragmentTransaction ft =
-							// manager.beginTransaction();
-							// // ft.replace(R.id.main_fragmentgroup,
-							// (Fragment)fm);
-							// ft.remove(fragment_Favorites);
-							// ft.commit();
-							// }
-
-							// main_Tile.mLayout.setPanelState(PanelState.ANCHORED);
-							// connect = new Connect(main, googleMap);
-							// connect.execute();
-							// main_Tile.tabhost.setCurrentTab(0);
-							// }
 
 						}
 					});
 
+				// If the 'Favorites' tab is clicked
 			main_Tile.tabhost.getTabWidget().getChildAt(1)
 					.setOnClickListener(new View.OnClickListener() {
 
 						@Override
 						public void onClick(View v) {
-
-							// if(main_Tile.tabhost.getCurrentTab() == 1 &&
-							// v.getTag().equals(1)){
-							// main_Tile.mLayout.setPanelState(PanelState.COLLAPSED);
-							// FragmentTransaction ft =
-							// manager.beginTransaction();
-							// // ft.replace(R.id.main_fragmentgroup,
-							// (Fragment)fm);
-							// ft.remove(fragment_Favorites);
-							// ft.commit();
-							// main_Tile.tabhost.setCurrentTab(3);
-							// }
-							// else{
-							// FragmentTransaction ft =
-							// manager.beginTransaction();
-							// ft.add(R.id.main_fragmentgroup,
-							// fragment_Favorites);
-							// ft.commit();
-							// main_Tile.tabhost.setCurrentTab(1);
-							//
-							// }
-							//
-							// }
+							
+							// If the 'Schedule' is visible, then remove the schedule fragment
 							if (sched.isVisible()) {
 								FragmentTransaction ft = main_Tile.manager
 										.beginTransaction();
@@ -260,104 +174,51 @@ public class Schedule extends Fragment {
 						}
 					});
 
+			// If the 'Settings' tab is clicked
 			main_Tile.tabhost.getTabWidget().getChildAt(2)
 					.setOnClickListener(new View.OnClickListener() {
 
 						@Override
 						public void onClick(View v) {
-							System.out.println("Clicked Settings!");
-
-							// if(main_Tile.tabhost.getCurrentTab() == 1 &&
-							// fragment_Favorites.isVisible()){
-							// FragmentTransaction ft =
-							// manager.beginTransaction();
-							// ft.remove(fragment_Favorites);
-							// ft.commit();
-							//
-							// main_Tile.tabhost.setCurrentTab(2);
-							// }
-							//
-							// else if(main_Tile.tabhost.getCurrentTab() == 2){
-							//
-							// main_Tile.mLayout.setPanelState(PanelState.COLLAPSED);
-							// main_Tile.tabhost.setCurrentTab(3);
-
+							
+							// If the 'Schedule' fragment is visible, then remove it
 							if (sched.isVisible()) {
 								FragmentTransaction ft = main_Tile.manager
 										.beginTransaction();
 								ft.remove(sched);
 								ft.commit();
 							}
-
 						}
-						// else{
-						// main_Tile.mLayout.setPanelState(PanelState.COLLAPSED);
-						// // FragmentTransaction ft =
-						// manager.beginTransaction();
-						// // ft.add(R.id.main_fragmentgroup,
-						// fragment_Schedule);
-						// // ft.commit();
-						// //
-						// main_Tile.tabhost.setCurrentTab(2);
-						//
-						// }
-						//
-						// }
 					});
 		}
 		return view;
 
 	}
 
+	// If the route titles in the adapter do not contain the route
+	// given in the parameter, then add that route and update the adapter/listview
 	public void setRoutes(Route r) {
-
-		// If the adapter does not contain the selected route title, add the
-		// stops
-
-		System.out.println("route title null : " + r.getRouteTitle());
-
-		// System.out.println("Adapter route titles: " +
-		// adapter.routeTitles.size());
-//		adapter.routeTitles.add(0);
-
-		if (!adapter.routeTitles.contains(r.getRouteTitle())) {
+		if (!adapter.routeTitles.contains(r.getRouteTitle())) {	
 			ArrayList<Stop> tempStops = r.getStops();
-
-			// stops.addAll(tempStops);
-
-			// System.out.println("Stop size is: " + stops.size() +
-			// ", Route name is " + r.getRouteTitle());
-
-			// adapter.addRoutes(stops, r.getRouteTitle()); // Trying this call
-			// instead
-
 			adapter.addRoute(r);
-
 			((BaseAdapter) lv_stopnames.getAdapter()).notifyDataSetChanged();
-
-			System.out.println("Route: "
-					+ adapter.mData.get(0).getStopDescription());
-			System.out.println("Route Data: " + adapter.getData().size());
 		}
 
 		else {
 			System.out.println("Route is already added to the titles");
-
 		}
-
 	}
 
+	// Remove the route from the listview
 	public void removeRoutes(Route r) {
 		ArrayList<Stop> tempStops = r.getStops();
-
 		adapter.removeRoute(r);
-
+		
+		// Update the listview adapter for the Schedule Fragment
 		((BaseAdapter) lv_stopnames.getAdapter()).notifyDataSetChanged();
-		System.out.println("Removing Route, Route Data: "
-				+ adapter.getData().size());
-
 	}
 
+	// Get the listview view based on the position
 	public View getViewByPosition(int pos, ListView listView) {
 		final int firstListItemPosition = listView.getFirstVisiblePosition();
 		final int lastListItemPosition = firstListItemPosition
@@ -371,22 +232,16 @@ public class Schedule extends Fragment {
 		}
 	}
 
-	// Fills lv_arr with the stop titles, so that way a custom listview does not
-	// need to be created and instead can be populated
-	// by lv_arr
+	// May be used in the future... Sets the position of the dots
+	// Which indicate each stop position
 	public void seekSetDotPosition(ArrayList<Integer> dotArray) {
+		
 		int [] tempIntArray = new int[lv_arr.length];
-//		int step = 85;
-//		
-//		for(int i = 0; i < numstops; i++){
-//			tempIntArray[i] = (int) lv_stopnames.getChildAt(i).getY();
-//
-//			
-//			System.out.println("child position: " + (int) lv_stopnames.getChildAt(i).getY());
-//		}
 		for(int i = 0; i < dotArray.size(); i++){
 			tempIntArray[i] = dotArray.get(i);
 		}
+		
+		// Set the dots on the seekbar and set the resource for the dots
 		seekbar.setDots(tempIntArray);
 		seekbar.setDotsDrawable(R.drawable.abc_btn_switch_to_on_mtrl_00001);
 

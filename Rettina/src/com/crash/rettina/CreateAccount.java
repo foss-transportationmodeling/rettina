@@ -1,3 +1,15 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * CreateAccount is used to create a new user's account... This has not been incorporated into
+ * the app yet and will most likely be used in the future
+ */
+
 package com.crash.rettina;
 
 import android.app.Activity;
@@ -18,7 +30,7 @@ public class CreateAccount extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.create_accnt);
+		setContentView(R.layout.create_accnt);		// This uses the create_accnt.xml for the layout
 		
 		
 		// Initialize the EditTexts and ImageButton
@@ -66,10 +78,6 @@ public class CreateAccount extends Activity {
 	
 			}
 		});
-		
-		
-		
-		
-		
+
 	}
 }

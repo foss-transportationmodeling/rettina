@@ -20,38 +20,32 @@ import com.google.android.gms.maps.model.Marker;
 public class Stop {
 	
 	// Setting up the variables that this class will use
-	private String routeID;
-	private String stopID;
-	private String stopDescription;
-	private LatLng latLng;
-	private ArrayList<LatLng> routePoints = new ArrayList<LatLng>();
-	private String routeTitle;
-	private String arrival_time;
-	private String departure_time;
-
-
-	// Constructor for setting up the Stop class
+	private String routeID;			// Holds the unique routeID
+	private String stopID;			// Holds the StopID
+	private String stopDescription;	// Holds the Stop description ('Name of the stop')
+	private LatLng latLng;			// Holds the Lat/Lng of the Stop
+	private ArrayList<LatLng> routePoints = new ArrayList<LatLng>();	// Holds all the Lat/Lng Points
+	private String routeTitle;		// Holds the route title
+	private String arrival_time;	// Holds the arrival time at this Stop
+	private String departure_time;	// Holds the departure time at this Stop	
+	private Marker marker;			// Holds the Google Map marker for this Stop
 	
-	private Marker marker;
-	
+	// Stop Constructor
 	public Stop(String _routeID, String _stopID, String _stopDescription, LatLng _latLng){
-		routeID = _routeID;
+		routeID = _routeID;	
 		stopID = _stopID;
 		stopDescription = _stopDescription;
 		latLng = _latLng;
 	}
 
-	
 	public String getRouteID() {
 		return routeID;
 	}
 
-	
 	public void setRouteID(String routeID) {
 		this.routeID = routeID;
 	}
 
-	
 	public String getStopID() {
 		return stopID;
 	}

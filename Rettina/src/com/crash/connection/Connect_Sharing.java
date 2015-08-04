@@ -2,31 +2,37 @@ package com.crash.connection;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
-
-import com.crash.rettina.ServiceHandler;
+import com.crash.connection.ServiceHandler;
 import com.crash.rettina.Sharing;
+
+/*
+ * Mitch Thornton
+ * Karthik Konduri
+ * Rettina - 2015
+ * 
+ * Connect_Sharing is used to establish a connection to the server and POST
+ * the user's sharing information, such as comments, ride experience, and 
+ * available seating
+ */
 
 public class Connect_Sharing extends AsyncTask<Void, Void, Void>{
 
-	private ProgressDialog pDialog;	
+	private ProgressDialog pDialog;		// Used to display a loading message to the user
 	Context context;
 	Sharing sharing;
 
 
-	
+	// Constructor
 	public Connect_Sharing(Context c, Sharing activity){
 		context = c;
 		sharing = activity;
 		
 	}
 	
-	/*
-	 * Async task class to get json by making HTTP call
-	 */
+	// Displays the loading message to the user
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
@@ -35,47 +41,33 @@ public class Connect_Sharing extends AsyncTask<Void, Void, Void>{
 		 pDialog.setMessage("Please wait...");
 		 pDialog.setCancelable(false);
 		 pDialog.show();
-
 	}
 
 
+	// This method is doing the majority of the work.. It establishes the connection and POSTS the sharing data
 	@Override
 	protected Void doInBackground(Void... arg0) {
 		ServiceHandler sh = new ServiceHandler();
 
-		
 		String sh_Routes = null;
 		
 		try {
-			// Need to URLEncode the trip_ID so the spaces do not mess up the POST Request
-		
+			// These Strings and floats hold the information that the user has shared about the given route
+			// They have to be URL Encoded due to the spaces in order to be POSTED to the server
 			
-			// Error here... Null Pointer... TripIDs is null
+			//!!!! Need to actually get the real Trip_ID's!!!!!!
+			String tripID = URLEncoder.encode("71 UConn Transportation Service","utf-8");	// Route's trip_ID
 			
-//			System.out.println("sharing null: " + sharing == null);
-//			System.out.println("route: " + sharing.getSelectedRoute().getRouteTitle());
-//			System.out.println("TripID null: " + sharing.getSelectedRoute().getTripIDs().get(0) == null);
+			String comment = URLEncoder.encode(sharing.getEt_commentText(), "utf-8");		// Comment about the Trip
+			float quality = sharing.getRb_driverRating();									// Quality of the trip	
+			float openSeats = sharing.getRb_seatsRating();									// Open seats available
 
-
-			
-//			String tripID = URLEncoder.encode(sharing.getSelectedRoute().getTripIDs().get(0), "utf-8");
-			
-			// Server is down and still getting NULL for the TripID, so using this test data
-			String tripID = URLEncoder.encode("71 UConn Transportation Service","utf-8");
-			
-			String comment = URLEncoder.encode(sharing.getEt_commentText(), "utf-8");
-			float quality = sharing.getRb_driverRating();
-			float openSeats = sharing.getRb_seatsRating();
-			
-			
-
+			// API call to the server containing all the above information
 			String url = "http://137.99.15.144/experiences?trip_id="+ tripID +"&comment="+ comment+ "&quality="+quality+"&open_seats="+openSeats;
 
-			sh_Routes = sh.makeServiceCall(
-					url,	// New API call, using Meriden
-					ServiceHandler.POST);
+			sh_Routes = sh.makeServiceCall(url, ServiceHandler.POST);
+			
 		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -83,11 +75,11 @@ public class Connect_Sharing extends AsyncTask<Void, Void, Void>{
 	}
 
 	
+	// Once the data has been passed to the server, dismiss the loading notification
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
-		pDialog.dismiss();
-
+		pDialog.dismiss();					// Close the loading warning
 		}
 
 }

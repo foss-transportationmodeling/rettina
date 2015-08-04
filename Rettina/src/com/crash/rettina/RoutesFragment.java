@@ -1,3 +1,19 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * RoutesFragment is a Fragment used to hold and search for all the routes that fall within
+ * the GPS coordinates. RoutesFragment pops up in the bottom half of the screen and uses a
+ * gridview to display all of the found routes.  The routes shown in the gridview can be clicked
+ * to display a route preview or pressed to add the route to the 'Favorites' fragment.  When the route
+ * is pressed or clicked, it will display the Stops and polyline on the map.  The "RoutesFragment" can
+ * be closed by clicking the 'x' shown in the top left of the corner
+ */
+
 package com.crash.rettina;
 
 import java.util.ArrayList;
@@ -22,58 +38,60 @@ import com.crash.routeinfo.Route;
 
 public class RoutesFragment extends Fragment {
 	
-	public Main_Tile main_tile;
-	public GridView gridview;
+	public Main main_tile;				// Allows for communication to the Main fragment
+	public GridView gridview;			// Used to display the found routes in the bottom half of the screen
 	
-	//public ArrayAdapter<String> adapter; // Used for old style
-	public MyAdapter adapter;  
+	public MyAdapter adapter;  			// Applied to gridview... Allows for a custom gridview
 
-	public ImageButton imgbtn_closeSearch;	
-	public Route clickedRoute;
-	public ArrayList<String> routeTitles = new ArrayList<String>();
-	public Integer busIcon;
-	public TextView tv_searching;	// Used to display the default searching for routes message
-	public boolean is_seaching = false;
+	public ImageButton imgbtn_closeSearch;	// When clicked, it closes the 'routesfragment'
+	public Route clickedRoute;				// Holds the route that was most recently clicked by the user
+	public Integer busIcon;					// Holds the bus icon for the gridview
+	public TextView tv_searching;			// Used to display the default searching for routes message
+	public boolean is_seaching = false;		// Boolean used to check if the user is currently searching for routes or not
 	
-		
+	public ArrayList<String> routeTitles = new ArrayList<String>();	// Holds all the routetitles for the routes that were found
+
 	// Constructor
-	public RoutesFragment(Main_Tile mt){
+	public RoutesFragment(Main mt){
 		main_tile = mt;
 	}
 
+	// When the Fragment is created
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 		      Bundle savedInstanceState) {
+		
+		//	Uses 'routesfragment' as the layout
 		    View view = inflater.inflate(R.layout.routesfragment,
 		        container, false);
 
+		    // Holds the bus icon for the gridview
 		    Integer busIcon = R.drawable.bus;
 		    
+		    // Holds the gridview, the image button to close the fragment, and the default searching text message
 			gridview = (GridView) view.findViewById(R.id.gridView1);
 			imgbtn_closeSearch = (ImageButton) view.findViewById(R.id.imgbtn_closeroute);
-			
 			tv_searching = (TextView) view.findViewById(R.id.tv_searching);
 			
-			
+			// Holds the route titles which are saved in the Main fragment
 			routeTitles = main_tile.routeTitles;
 			
+			// Used on the gridview to make a custom gridview
 			adapter = new MyAdapter(this.getActivity());
 			
+			// Setting the adapter and the number of columns
 			gridview.setAdapter(adapter);
 	        gridview.setNumColumns(3);
 	        
+	        // If the user is currently seraching, then show the 'routesfragment' fragment otherwise, hide it
 	        if(is_seaching == true){
-
 				tv_searching.setVisibility(View.VISIBLE);
-//				gridview.setVisibility(View.GONE);
 	        }
 	        else{
 	        	tv_searching.setVisibility(View.GONE);
-//				gridview.setVisibility(View.VISIBLE);
 	        }
 
 	        
-			// When a tile is clicked, show the route preview and stops
-			
+			// When a tile is pressed, show the polyline, stops, and add the route to the favorites
 			gridview.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 				public boolean onItemLongClick(AdapterView<?> parent, View v,
@@ -82,18 +100,17 @@ public class RoutesFragment extends Fragment {
 					// If the favorites does not already contain this route, then add to the favorites
 					if(!main_tile.fragment_Favorites.selectedFavs.contains(main_tile.routes.get(position))){
 					
-						// New attempt at hiding the polyline
+						// If there are not any routes, get the route stops
 						if(main_tile.routes.get(position).getStops().size() < 1){
 							main_tile.getStops(main_tile.routes.get(position));
-							
 						}
 						
+						// Loop through all the routes 
 						for(int i = 0; i < main_tile.routes.size(); i++){
+							// Hide all the stops and polylines for all the routes
 							if(main_tile.routes.get(i).getStops().size() > 0){
 								main_tile.routes.get(i).hideStops(main_tile.googleMap);
 								main_tile.routes.get(i).hidePolyLine();
-								//main_tile.hideRoute(main_tile.routes.get(i));
-
 							}
 						}
 					
@@ -107,50 +124,29 @@ public class RoutesFragment extends Fragment {
 						main_tile.fragment_Favorites.selectedFavs.get(i).setClicked(false);
 					}
 					
+					// Set the clicked route as 'clicked'
 					main_tile.routes.get(position).setClicked(true);
 					clickedRoute = main_tile.routes.get(position);
-					
 					main_tile.clickedRoute = clickedRoute;
 					
-					// Try this to fix the Null pointer on the Sharing Activity
+					// Set the tripID for the clickedRoute
 					clickedRoute.setTripIDs(main_tile.routes.get(position).getTripIDs());
 					
+					// Add the clickedRoute to the "Favorites"
 					main_tile.fragment_Favorites.selectedFavs.add(clickedRoute);
 					
 					
-					
-					// Since there are favorites, display the actual favorites instead of the default empty message
+					// If there are more than 0 favorites, set them as true
 					if(main_tile.fragment_Favorites.selectedFavs.size() > 0){
 						main_tile.fragment_Favorites.are_there_favorites = true;	
-//					main_tile.fragment_Favorites.lv_favs.setVisibility(View.VISIBLE);
-//					main_tile.fragment_Favorites.tv_emptyfavs.setVisibility(View.GONE);
 					}
+					// Otherwise set that there are no favorites
 					else{
 						main_tile.fragment_Favorites.are_there_favorites = false;
 					}
 					
+					// Clear the stops from 'Schedule' fragment
 					main_tile.fragment_Schedule.stops.clear();
-					
-					
-					// Not route stops yet
-					
-//					System.out.println("Error Checking: Route Stops are: ");
-//					clickedRoute.printRoute();
-
-					
-					// Commenting to test if this fixes the schedule problem
-				 if(clickedRoute.getStops().size() > 0){
-						//System.out.println("Trying to set schedule!");
-					//main_tile.fragment_Schedule.tempRoute = clickedRoute;
-					
-					
-						// I think this is the problem line... the stops are being found in the background during the shape connect so the clickedroute
-						// Is actually null when this is called.... Then the postexecute finishes 
-				//	main_tile.fragment_Schedule.setRoutes(clickedRoute);
-
-					
-					}
-				
 					
 					// Make this show only when a route is being previewed on the map or is selected
 					main_tile.imgbtn_SchedulePopup.setVisibility(View.VISIBLE);
@@ -159,26 +155,26 @@ public class RoutesFragment extends Fragment {
 					else{
 						System.out.println("Route is already in favorites!");
 					}
+					
 					return true;
 				}
 			});
 			
-			// When a tile is held, add the route to the favorites
+			// When a tile is clicked, preview the route by showing the polyline and stops on the map
 			gridview.setOnItemClickListener(new OnItemClickListener() {
 
-				// Need to make this so it does not interfere with the clicking of a route...
-				// If the route has already been clicked, it should reuse that route information and simply add it to the favorites
 				@Override
 				public void onItemClick(AdapterView<?> parent, View v,
 						int position, long id) {
 
-					
+					// If there are less than 0 stops, then make the method call to get the Stops
 					if(main_tile.routes.get(position).getStops().size() < 1){
-						main_tile.getStops(main_tile.routes.get(position));
-						
+						main_tile.getStops(main_tile.routes.get(position));	
 					}
 					
+					// For the entire size of the routes
 					for(int i = 0; i < main_tile.routes.size(); i++){
+						// If the route currently does not have stops, then get the stops and hide the stops/polyline
 						if(main_tile.routes.get(i).getStops().size() > 0){
 							main_tile.routes.get(i).hideStops(main_tile.googleMap);
 							main_tile.routes.get(i).hidePolyLine();
@@ -186,13 +182,9 @@ public class RoutesFragment extends Fragment {
 						}
 					}
 					
-					main_tile.showStops(main_tile.routes.get(position)); // Might error out since it will be waiting to get the stops from the previous call first
+					// Show the stops and get the polyline for the clicked route
+					main_tile.showStops(main_tile.routes.get(position)); 
 					main_tile.getShape(main_tile.routes.get(position));
-							
-					// For now clear the stops so only the last clicked route will be displayed... Will need to change this so
-					// Multiple routes can be supported when Favorites is used
-					
-					//fragment_Favorites.selectedFavs.add(routes.get(position));
 				}
 			});
 
@@ -220,6 +212,7 @@ public class RoutesFragment extends Fragment {
 		
 	}
 	
+	// Custom adapter used to make a custom gridview
 	public class MyAdapter extends BaseAdapter {
 		 
         private Context mContext;
@@ -256,7 +249,8 @@ public class RoutesFragment extends Fragment {
             else{
                 grid = (View) convertView;
             }
-            // This may cause an error because if there aren't routes, then it won't initialize the resources behind the views
+            
+            // Assign the views for each Gridview item
             TextView txtView = (TextView)grid.findViewById(R.id.tv_gridviewtitle);
             txtView.setText(routeTitles.get(position));
             

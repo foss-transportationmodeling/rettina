@@ -12,62 +12,43 @@
  * in as a parameter, which allows for the route to be drawn on the map.  
  */
 
-
 package com.crash.connection;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.AsyncTask;
-import android.text.format.Time;
 import android.util.Log;
 
-import com.crash.rettina.MainActivity;
-import com.crash.rettina.RouteMenu;
-import com.crash.rettina.ServiceHandler;
+import com.crash.connection.ServiceHandler;
 import com.crash.routeinfo.Route;
 import com.crash.routeinfo.Stop;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.VisibleRegion;
 
 public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 
-	private ProgressDialog pDialog;
-	private ArrayList<LatLng> tempPolyPoints = new ArrayList<LatLng>();
-	private Route route;
+	private ProgressDialog pDialog;										// Displays a loading screen to the user
+	private Route route;												// Holds the route that contains all the Stops
 	private Context context;
-	private GoogleMap map;
+	private GoogleMap map;												// Holds the Google Map which is in the Main_Tile activity
 
+	
+	// Constructor
 	public Connect_Stops(Route r, Context c, GoogleMap m) {
-
 		route = r;
 		context = c;
 		map = m;
-		
 	}
-
-	/*
-	 * Async task class to get json by making HTTP call
-	 */
+	
+	// Displays the loading message to the user
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
@@ -76,112 +57,77 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 		 pDialog.setMessage("Please wait...");
 		 pDialog.setCancelable(false);
 		 pDialog.show();
-		// getScreenCornerCoordinates();
-
 	}
 
+	// Connects to the server and retrieves all the Stops and Stop Times for the given route
 	@Override
 	protected Void doInBackground(Void... arg0) {
-		// Creating service handler class instance
-		// ServiceHandler sh = new ServiceHandler();
 		
-		getStops(route);
-		getStopTimes(route);
-		
-		//getStops_Test(route);  // <---- Static data call
+		getStops(route);		// Gets all the stops for the given route
+		getStopTimes(route);	// Gets all the stop times for the given route
 
 		return null;
 	}
 
+	// Once the Stops and Stop Times have been retrieved,
+	// remove the loading message and animate the camera to the first stop on the route
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
-		// getScreenCornerCoordinates();
-		// routeMenu.setRouteData();
-		route.showStops(map);
-		pDialog.dismiss();
 		
-		// This zooms into the first stops location.. It should zoom so it fits the whole route in but this can be solved later
+		route.showStops(map);	// Display the stops on the map
+		pDialog.dismiss();		// Remove the loading message
+		
+		// This animates the camera to the first stop location
 		map.animateCamera(CameraUpdateFactory.newLatLngZoom(route.getStops().get(0).getLatLng(),
 				14));
-		
 	}
 
+	// This connects to the server and grabs all the stops based on the specified Route's Trip_ID
+	// The server is set up to filter the information based on the Route's Trip_ID
 	public void getStops(Route r) {
 		ServiceHandler sh = new ServiceHandler();
-
-		// Making the connection to grab all the stops based on the TripID...
-		// Temporary: Right now I am just using the first element of the TripID
-		// ArrayList
-		// But this will change when the user will specify which trip they want
-		// based on the
-		// Time of day
-
-//		String sh_Routes = sh.makeServiceCall(
-//				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),
-//				ServiceHandler.GET);
-//		System.out.println("http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5));
 		
 		String sh_Routes = null;
-
-
-		
-		// Need to make it so it actually gets the real tripID and calls it
-//		String sh_Routes = sh.makeServiceCall(
-//				"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
-//				ServiceHandler.GET);
 		
 		try {
+			// URL is URLEncoded to replace 'spaces' by '%20'
 			String query = URLEncoder.encode(r.getTripIDs().get(0), "utf-8");
 			String url = "http://137.99.15.144/stops?trip_id=" + query;
-
-			System.out.println("URL IS: " + url);
-
 			
-			sh_Routes = sh.makeServiceCall(
-					url,	// New API call, using Meriden
-					ServiceHandler.GET);
+			sh_Routes = sh.makeServiceCall(url, ServiceHandler.GET);	// Call to server
+			
 		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
+		// If results are found, then populate given Route with the correct Stops
 		if (sh_Routes != null) {
 			try {
 				JSONObject jsonObj = new JSONObject(sh_Routes);
 				JSONArray jsonArray = jsonObj.getJSONArray("stops");
 
-				System.out.println("Length of Stops: " + jsonArray.length());
-
 				
-				// looping through All Contacts
+				// looping through the entire JSON array
 				for (int i = 0; i < jsonArray.length(); i++) {
 
 					JSONObject tempObj = jsonArray.getJSONObject(i);
 
+					// Lat/Lng for each stop
 					LatLng lat_lng = new LatLng(Double.parseDouble(tempObj.get(
 							"stop_lat").toString()), Double.parseDouble(tempObj
 							.get("stop_lon").toString()));
-					
-					
-//					Stop tempStop = new Stop(
-//							r.getRouteID(),
-//							Integer.parseInt(tempObj.get("stop_id").toString()),
-//							(tempObj.get("stop_name").toString()), lat_lng);
-					
+
+					// Create a temporary stop that holds all the information... This is then saved to the route
 					Stop tempStop = new Stop(
 							r.getRouteID(),
 							tempObj.get("stop_id").toString(),
 							(tempObj.get("stop_name").toString()), lat_lng);
 
+					// Add the stop to the given route
 					r.addStop(tempStop);
 				}
 				
-				System.out.println("ROUTE: " + r.getRouteTitle() +  ", SIZE OF STOPS: " + r.getStops().size());
-
-				// System.out.println("First Stop: " +
-				// r.getStops().get(0).getStopDescription());
-
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -221,9 +167,6 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 					r.addStop(tempStop);
 				}
 
-				// System.out.println("First Stop: " +
-				// r.getStops().get(0).getStopDescription());
-
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -233,103 +176,48 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 
 	}
 	
-	
-
-	public void getShape(Route r) {
-		ServiceHandler sh = new ServiceHandler();
-
-		// Making the connection to grab all the stops based on the TripID...
-		// Temporary: Right now I am just using the first element of the TripID
-		// ArrayList
-		// But this will change when the user will specify which trip they want
-		// based on the
-		// Time of day
-
-		// For some reason Blue Line and probably some others only have a couple
-		// stops in some of there trips..
-		// Using arrayLocation 5 for temporary in order to get all the stops
-		// since location 0 doesn't have them all...
-		String sh_Routes = sh.makeServiceCall(
-				"http://137.99.15.144/shapes?trip_id=" + r.getTripIDs().get(5),
-				ServiceHandler.GET);
-
-		System.out.println("http://137.99.15.144/shapes?trip_id="
-				+ r.getTripIDs().get(5));
-		if (sh_Routes != null) {
-			try {
-				JSONObject jsonObj = new JSONObject(sh_Routes);
-				JSONArray jsonArray = jsonObj.getJSONArray("shapes");
-
-				// looping through All Contacts
-				for (int i = 0; i < jsonArray.length(); i++) {
-
-					JSONObject tempObj = jsonArray.getJSONObject(i);
-
-					LatLng tempLatLng = new LatLng(Double.parseDouble(tempObj
-							.get("shape_pt_lat").toString()),
-							Double.parseDouble(tempObj.get("shape_pt_lon")
-									.toString()));
-
-					tempPolyPoints.add(tempLatLng);
-
-				}
-
-				r.setPolyLineOptions(drawPrimaryLinePath(tempPolyPoints,
-						r.getColor()));
-
-				// System.out.println("First Stop: " +
-				// r.getStops().get(0).getStopDescription());
-
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		} else {
-			Log.e("ServiceHandler", "Couldn't get any data from the url");
-		}
-
-	}
-	
+	// Establishes a connection to the server and gets the Stop Times for each Stop based on the Trip_ID
 	public void getStopTimes(Route r) {
 		ServiceHandler sh = new ServiceHandler();	
 		
 		String sh_Routes = null;
 
 		try {
+			// URL Encode the Trip_ID to replace 'spaces' by '%20'... Allowing to connect to the server
 			String query = URLEncoder.encode(r.getTripIDs().get(0), "utf-8");
 			String url = "http://137.99.15.144/stop_times?trip_id=" + query;
-
-			System.out.println("URL IS: " + url);
-
 			
-			sh_Routes = sh.makeServiceCall(
-					url,	// New API call, using Meriden
-					ServiceHandler.GET);
+			sh_Routes = sh.makeServiceCall(url, ServiceHandler.GET);	// Connect to server
+			
 		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
+		// If there are results, then get the arrival and departure times for each stop
 		if (sh_Routes != null) {
 			try {
 				JSONObject jsonObj = new JSONObject(sh_Routes);
 				JSONArray jsonArray = jsonObj.getJSONArray("stop_times");
 
-				System.out.println("Length of Stops: " + jsonArray.length());
-
 				
-				// looping through All Contacts
+				// looping through the entire JSON Array of results
 				for (int i = 0; i < jsonArray.length(); i++) {
 
 					JSONObject tempObj = jsonArray.getJSONObject(i);
 
+					// Saving the arrival time
 					String arrival_time = tempObj.get(
 							"arrival_time").toString();
 					
+					// Saving the departure time
 					String departure_time = tempObj.get(
 							"departure_time").toString();
+					
+					// As long as the loop is less than the amount of stops in the route, then set the arrival
+					// and departure time for that route
 					if(i < r.getStops().size()){
-					r.getStops().get(i).setArrival_time(arrival_time);
-					r.getStops().get(i).setDeparture_time(departure_time);
+						r.getStops().get(i).setArrival_time(arrival_time);
+						r.getStops().get(i).setDeparture_time(departure_time);
 					}
 				}
 				
@@ -340,24 +228,6 @@ public class Connect_Stops extends AsyncTask<Void, Void, Void> {
 		} else {
 			Log.e("ServiceHandler", "Couldn't get any data from the url");
 		}
-
-	}
-
-	// Draw route line
-	private PolylineOptions drawPrimaryLinePath(
-			ArrayList<LatLng> listLocsToDraw, int c) {
-
-		PolylineOptions options = new PolylineOptions();
-
-		options.color(c);
-		options.width(7);
-		options.visible(true);
-
-		for (LatLng locRecorded : listLocsToDraw) {
-			options.add(locRecorded);
-		}
-
-		return options;
 
 	}
 }

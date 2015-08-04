@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -15,51 +14,45 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
 
-import com.crash.rettina.Main_Tile;
-import com.crash.rettina.ServiceHandler;
+import com.crash.rettina.Main;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
-// This Class is used to do a background JSON call to the server. It will send the bundled up 
-// User's Location info at the end of their Trip
-
-
-
-// Get the posting to work tomorrow!!!
+/*
+ * Mitch Thornton
+ * Karthik Konduri
+ * Rettina - 2015
+ *This Class is used to do a background JSON call to the server. It will send the bundled up 
+ *User's Location info at the end of their Trip
+ */
 
 public class Connect_LocationInfo extends AsyncTask<Void, Void, Void> {
 
-	private ProgressDialog pDialog;
+	private ProgressDialog pDialog;			// ProgressDialog used to notify when the location info has started and  finished
 	public Context context;
-	public Main_Tile main_Tile;
+	public Main main_Tile;
 	public JSONObject jsonObj;
 	
-	public Connect_LocationInfo(Main_Tile mt, Context c, JSONObject json) {
+	// Constructor
+	public Connect_LocationInfo(Main mt, Context c, JSONObject json) {
 		main_Tile = mt;
 		context = c;
 		jsonObj = json;
 	}
 
+	// This is done in the background. Used to POST the location information
 	@Override
 	protected Void doInBackground(Void... arg0) {
-		
-//		ServiceHandler sh = new ServiceHandler();
-//		String sh_Routes = null;
 		System.out.println("Testing do in background");
-
 		POST(jsonObj);
 
 		return null;
 	}
 
-	// Async task class to get json by making HTTP call
-
+	// Starts the ProgressDialog before everything else
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
@@ -68,15 +61,16 @@ public class Connect_LocationInfo extends AsyncTask<Void, Void, Void> {
 		pDialog.setMessage("Please wait...");
 		pDialog.setCancelable(false);
 		pDialog.show();
-		// getScreenCornerCoordinates();
-
 	}
 
+	// Once the POST has finished, stop the pDialog (The loading notification)
 	@Override
 	protected void onPostExecute(Void result) {
 		pDialog.dismiss();
 	}
 
+	// The POST method, is used to make an HttpPost... It packages the user's location into a JSON object
+	// Converts it into a String and then POSTS it to the server
 	public static String POST(JSONObject jsonObject) {
 		InputStream inputStream = null;
 
@@ -91,21 +85,9 @@ public class Connect_LocationInfo extends AsyncTask<Void, Void, Void> {
 			// 2. make POST request to the given URL
 			HttpPost httpPost = new HttpPost(url);
 
-			//String json = "";
-
-			// 3. build jsonObject
-//			JSONObject jsonObject = new JSONObject();
-//			jsonObject.accumulate("name", person.getName());
-//			jsonObject.accumulate("country", person.getCountry());
-//			jsonObject.accumulate("twitter", person.getTwitter());
 
 			// 4. convert JSONObject to JSON to String
 			String json = jsonObject.toString();
-
-			// ** Alternative way to convert Person object to JSON string usin
-			// Jackson Lib
-			// ObjectMapper mapper = new ObjectMapper();
-			// json = mapper.writeValueAsString(person);
 
 			// 5. set json to StringEntity
 			StringEntity se = new StringEntity(json);
@@ -123,14 +105,10 @@ public class Connect_LocationInfo extends AsyncTask<Void, Void, Void> {
 
 			// 9. receive response as inputStream
 			inputStream = httpResponse.getEntity().getContent();
-			
-			System.out.println("Testing the Location Pass to Server");
-			
+						
 			ResponseHandler<String> responseHandler = new BasicResponseHandler();
 			String response = httpclient.execute(httpPost, responseHandler);
 			
-			System.out.println(response);
-
 			// 10. convert inputstream to string
 			if (inputStream != null)
 				result = convertInputStreamToString(inputStream);
@@ -140,14 +118,12 @@ public class Connect_LocationInfo extends AsyncTask<Void, Void, Void> {
 		} catch (Exception e) {
 			Log.d("InputStream", e.getLocalizedMessage());
 		}
-		
-		
 
 		// 11. return result
 		return result;
 	}
 
-	
+	// Convert the inputStream into a String
 	private static String convertInputStreamToString(InputStream inputStream) throws IOException{
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
         String line = "";

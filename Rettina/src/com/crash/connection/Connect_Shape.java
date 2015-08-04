@@ -1,13 +1,17 @@
-
-
 package com.crash.connection;
+
+/*
+ * Mitch Thornton
+ * Karthik Konduri
+ * Rettina - 2015
+ * Connect_Shape is used to gather the GTFS Shape information from the server.
+ * This will be used to draw the polyline, and will be called when the user
+ * Either touches/holds the desire route
+ */
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,58 +19,42 @@ import org.json.JSONObject;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.AsyncTask;
-import android.text.format.Time;
 import android.util.Log;
 
-import com.crash.rettina.MainActivity;
-import com.crash.rettina.Main_Tile;
-import com.crash.rettina.RouteMenu;
+import com.crash.rettina.Main;
 import com.crash.rettina.Schedule;
-import com.crash.rettina.ServiceHandler;
+import com.crash.connection.ServiceHandler;
 import com.crash.routeinfo.Route;
-import com.crash.routeinfo.Stop;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.VisibleRegion;
 
 public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 	
 		private ProgressDialog pDialog;	
-		Route route;
 		private ArrayList<LatLng> tempPolyPoints = new ArrayList<LatLng>();
-		Context context;
-		MainActivity ma;
-	//	Schedule sched;
-		Main_Tile mainTile;
-		GoogleMap map;
 		public Schedule sched;
 
+		Route route;
+		Context context;
+		Main mainTile;
+		GoogleMap map;
 
+
+		// Constructor
 		public Connect_Shape(Route r, GoogleMap googleMap, Context c) {
+			
 			route = r;
 			context = c;
-			
-			// Commented out... This works with MainActivity
-			// ma = (MainActivity) c;
-			
-			// This works for the Tile UI
-			mainTile = (Main_Tile) c;
-			map = googleMap;
-			sched = mainTile.fragment_Schedule;
+			mainTile = (Main) c;
+			map = googleMap;					// Map refers to the Google Map in the Main_Tile activity
+			sched = mainTile.fragment_Schedule; // Schedule Fragment
 		}
 	
-		/*
-		 * Async task class to get json by making HTTP call
-		 */
+		// Launches the progress dialog to alert the user that Connect_Shape is running the background
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
@@ -75,138 +63,84 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 			 pDialog.setMessage("Please wait...");
 			 pDialog.setCancelable(false);
 			 pDialog.show();
-			//getScreenCornerCoordinates();
-
-
 		}
 
+		// Get's the shape information from the server
 		@Override
 		protected Void doInBackground(Void... arg0) {
-			// Creating service handler class instance
-			//ServiceHandler sh = new ServiceHandler();
 			
-			getShape(route);
-			//getShape_Test(route);
-
+			getShape(route);	// Method to get the Shape information from server
+			
 		return null;
 		}
 		
+		// Once the Shape information has been retrieved from the server, set the polyine and dismiss the loading message
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			//getScreenCornerCoordinates();
 
 			// If the route's polylineOptions is not null, then set the polyline
 			if(route.getPolyLineOptions() != null){
-				System.out.println("Setting the polyline");
-
+				
 				route.setPolyLine(map.addPolyline(route.getPolyLineOptions()));
-				
-				// Setting the schedule for this route... May need to change this up a little bit so when the route has already
-				// Found all the stops and is clicked again, skip the connect_shape call and just use the information for that route
 
 			}
 
-			pDialog.dismiss();
+			pDialog.dismiss();	// Close the loading message
 			
 			
-			// Trying to handle drawing on the map and updating the schedule from here.. Not sure if it will work!
-			//ma.drawRoute(route);
-			// Still not showing
+			// If the polyine is not null, then show the polyline on the Google Map which is in the Main_Tile activity
 			if(route.getPolyLine() != null){
-				
-			
-				System.out.println("Showing the polyline");
-				mainTile.showRoute(route);
-				
-				// Seeing if this fixes the schedule problem
-				
+				mainTile.showRoute(route);				
 			}
-			
-			// Used for MainActivity UI
-			//ma.showStops(route);		
-			//ma.getSched().setRoutes(route);
-			
-			// Setting the schedule
 
+			
+			// If the route is currently being navigated by the user, set the camera position for navigation mode
 			if(route.isNavMode() == true){
 				navMode(route);
 			}
 
-			}
+		}
 			
 		
 		public void getShape(Route r) {
 			ServiceHandler sh = new ServiceHandler();
 			
-			// Making the connection to grab all the stops based on the TripID...
-			// Temporary: Right now I am just using the first element of the TripID ArrayList
-			// But this will change when the user will specify which trip they want based on the
-			// Time of day
-			
-			
-			// For some reason Blue Line and probably some others only have a couple stops in some of there trips..
-			// Using arrayLocation 5 for temporary in order to get all the stops since location 0 doesn't have them all...
-			
-			// Error: When trying to get the meriden data... Error 500 on Trevor's behalf
-//			String sh_Routes = sh.makeServiceCall(
-//					"http://137.99.15.144/shapes?trip_id=" + r.getTripIDs().get(5),
-//					ServiceHandler.GET);
-			
-			
-//			System.out.println("http://137.99.15.144/shapes/UConn?trip_id=" + r.getTripIDs().get(5));
-
-			
+			// Making the connection to grab the shape points based on the TripID
 			String sh_Routes = null;
-
-			// Need to make it so it actually gets the real tripID and calls it
-//			String sh_Routes = sh.makeServiceCall(
-//					"http://137.99.15.144/stops?trip_id=" + r.getTripIDs().get(5),	// New API call, using Meriden
-//					ServiceHandler.GET);
-			
+		
 			try {
+				// Set the URL for the API request to the server
 				String query = URLEncoder.encode(r.getTripIDs().get(0), "utf-8");
 				String url = "http://137.99.15.144/shapes?trip_id=" + query;
 
-				sh_Routes = sh.makeServiceCall(
-						url,	// New API call, using Meriden
-						ServiceHandler.GET);
+				sh_Routes = sh.makeServiceCall(url, ServiceHandler.GET);
+				
 			} catch (UnsupportedEncodingException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-//			String sh_Routes = sh.makeServiceCall(
-//					"http://137.99.15.144/stops?trip_id=6%20UConn%20Transportation%20Service",
-//					ServiceHandler.GET);
-			
-			
-			
-			
+
+			// If the server has found a shape, then loop through the server JSON results, saving the polyline points
 			if (sh_Routes != null) {
 				try {
+					
 					JSONObject jsonObj = new JSONObject(sh_Routes);
 					JSONArray jsonArray = jsonObj.getJSONArray("shapes");
 
-					
-					// looping through All Contacts
+					// looping through the entire polyline lat/lng points, saving the points to tempPolyPoints
 					for (int i = 0; i < jsonArray.length(); i++) {
 						
 						JSONObject tempObj = jsonArray.getJSONObject(i);
-						
 						LatLng tempLatLng = new LatLng(Double.parseDouble(tempObj.get("shape_pt_lat").toString()), Double.parseDouble(tempObj.get("shape_pt_lon").toString()));
 						
+						// Add the polyline lat/lng points to tempPolyPoints
 						tempPolyPoints.add(tempLatLng);
 					    	  
 					}
 					
+					// Set the polyline and draw the polyline based on the route's specified polyline color retrieved from GTFS data
 					r.setPolyLineOptions(drawPrimaryLinePath(tempPolyPoints, r.getColor()));
-					
-					
-					
 
-					System.out.println("Size of polyline " + tempPolyPoints.size());
-					
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -225,10 +159,7 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 			String sh_Routes = sh.makeServiceCall(
 					"http://137.99.15.144/static/shapes.json",
 					ServiceHandler.GET);
-			
-			
-			
-			
+
 			if (sh_Routes != null) {
 				try {
 					JSONObject jsonObj = new JSONObject(sh_Routes);
@@ -247,11 +178,7 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 					}
 					
 					r.setPolyLineOptions(drawPrimaryLinePath(tempPolyPoints, r.getColor()));					
-					
-					
-
-					System.out.println("PolyLineOptions Size: " + tempPolyPoints.size());
-					
+										
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -265,24 +192,23 @@ public class Connect_Shape extends AsyncTask<Void, Void, Void>{
 		
 		
 		public void navMode(Route r){
-			// Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+			// Construct a CameraPosition and animate the camera to that position.
 			CameraPosition cameraPosition = new CameraPosition.Builder()
 			    .target(r.getStops().get(0).getLatLng())      // Sets the center of the map to Mountain View
 			    .zoom(19)                   // Sets the zoom
 			    .bearing(90)                // Sets the orientation of the camera to east
 			    .tilt(80)                   // Sets the tilt of the camera to 30 degrees
 			    .build();                   // Creates a CameraPosition from the builder
-			ma.googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 			
-			//Null Pointer here
+			map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+			
+			// Display the first stop's information to the user
 			 r.getStops().get(0).getMarker().showInfoWindow();
 		}
 	
 
-		// Draw route line
+		// Create the polyline
 		private PolylineOptions drawPrimaryLinePath(ArrayList<LatLng> listLocsToDraw, int c) {
-
-
 			PolylineOptions options = new PolylineOptions();
 
 			options.color(c);

@@ -1,3 +1,18 @@
+/*
+ * Rettina - 2015
+ * Mitchell Thornton
+ * Professor Konduri
+ * University of Connecticut
+ */
+
+/*
+ * The sharing fragment is used to handle when the user is currently navigating a route
+ * and selects to share information.  Once the user elects to share information, this
+ * fragment appears.  It allows the user to share information such as 'ride experience,'
+ * 'seats available,' and location
+ */
+
+
 package com.crash.rettina;
 
 import java.util.ArrayList;
@@ -23,37 +38,37 @@ import com.crash.routeinfo.Route;
 
 public class Sharing extends Fragment {
 	
-	public Main_Tile main_tile;
-	private RatingBar rb_driver;
-	private RatingBar rb_seats;
-	private RadioGroup rg_location;
-	private Spinner spin_ping;
-	private EditText et_comment;
-	private Route selectedRoute;
+	public Main main_tile;			// Used to establish communication to the Main activity
+	private RatingBar rb_driver;	// Rating bar used for the user to rank the driver
+	private RatingBar rb_seats;		// Rating bar used for the user to show how many open seats
+	private RadioGroup rg_location;	// Radio group for deciding how the user wants to share the location information
+	private Spinner spin_ping;		// Spinner for deciding the location ping time
+	private EditText et_comment;	// User can write comments about the trip
+	private Route selectedRoute;	// The selected route the user is currently on
 	
-	public long ping;
+	public long ping;				// Holds the ping time
 		
 	
-	Sharing sharing;
+	Sharing sharing;				// Holds the sharing Fragment
 
 	
-	public Sharing(Main_Tile mt){
+	// Constructor
+	public Sharing(Main mt){
+		// Assign the Main activity
 		main_tile = mt;
 		
-		System.out.println("IN Sharing, is the clicked route null?: " + mt.clickedRoute == null);
-		
+		// Set the selected route
 		setSelectedRoute(mt.clickedRoute);
 		sharing = this;
-		
-		// Do clickedRoute for now... When it is attached to the Navigation mode, get the selected route from that instead..
-//		selectedRoute = mt.clickedRoute;
 	}
 	
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		
+		// Used to hold the ping selections time
 		ArrayList<String> pingSelections = new ArrayList<String>();
 		
+		// The ping selection times
 		pingSelections.add("5 seconds");
 		pingSelections.add("20 seconds");
 		pingSelections.add("30 seconds");
@@ -61,9 +76,10 @@ public class Sharing extends Fragment {
 		pingSelections.add("1 minute");
 		pingSelections.add("5 minutes");
 
-		
+		// Set the layout as sharing.xml
 		final View view = inflater.inflate(R.layout.sharing, container, false);
 		
+		// Assign the views there resources
 		Button btn_share = (Button) view.findViewById(R.id.btn_usershare);
 		rb_driver = (RatingBar) view.findViewById(R.id.ratingbar_driver);
 		rb_seats = (RatingBar) view.findViewById(R.id.ratingbar_space);
@@ -71,11 +87,12 @@ public class Sharing extends Fragment {
 		spin_ping = (Spinner) view.findViewById(R.id.spinner_locationping);
 		et_comment = (EditText) view.findViewById(R.id.et_comment);
 		
-		
+		// Assign the spinner and ping adapters
 		ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this.getActivity(), R.layout.custom_spinner_item, pingSelections);
 		spinnerAdapter.setDropDownViewResource(R.layout.custom_spinner_dropdown);
 		spin_ping.setAdapter(spinnerAdapter);
 		
+		// Set the listener for the 'sharing' button
 		btn_share.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
@@ -90,8 +107,8 @@ public class Sharing extends Fragment {
 				
 				float driverRating = rb_driver.getRating();
 				float seatingSpace = rb_seats.getRating();			
-				// Need to setup so it uploads it as JSON to the Server
-				
+
+				// Connects to the server and shares the user's information
 				Connect_Sharing jsonsharing = new Connect_Sharing(sharing.getActivity(), sharing);
 				jsonsharing.execute();
 				
@@ -125,7 +142,7 @@ public class Sharing extends Fragment {
 
 				main_tile.removeSharing();
 					
-					main_tile.tabhost.setCurrentTab(3);		
+				main_tile.tabhost.setCurrentTab(3);		
 				
 			}
 		});
@@ -151,15 +168,6 @@ public class Sharing extends Fragment {
 		this.rb_seats.setRating(f);
 	}
 
-	
-	// Get and set the radio locations
-//	public RadioGroup getRg_locationSelection() {
-//		return rg_location.get
-//	}
-//
-//	public void setRg_location(RadioGroup rg_location) {
-//		this.rg_location = rg_location;
-//	}
 
 	
 	public String getSpin_PingSelection() {
