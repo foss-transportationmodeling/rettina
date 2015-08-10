@@ -23,10 +23,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -49,7 +52,7 @@ public class Schedule extends Fragment {
 
 	public MyListAdapter adapter;	// The adapter used for the Listview
 
-	public VerticalSeekBar seekbar;	// The seekbar that shows the progress of the vehicle
+//	public VerticalSeekBar seekbar;	// The seekbar that shows the progress of the vehicle
 	
 	private ImageButton imgbtn_closeSchedule;	// The 'x' button to close the Schedule fragment
 	public ListView lv_stopnames, lv_stoptimes;	// The Listviews for the stop names and stop times
@@ -62,6 +65,7 @@ public class Schedule extends Fragment {
 	@SuppressLint("Instantiatable")
 	public Schedule(Main mt) {
 		main_Tile = mt;
+		
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,40 +76,46 @@ public class Schedule extends Fragment {
 		sched = this;
 		
 		super.onCreate(savedInstanceState);
+			
+		stops = main_Tile.clickedRoute.getStops();
+		
 		
 		// Create the seekbar 
-		seekbar = new VerticalSeekBar(sched);
+//		seekbar = new VerticalSeekBar(sched);
 		
 		// Set the resource for the seekbar
-		seekbar = (VerticalSeekBar) view.findViewById(R.id.seekbar);
+//		seekbar = (VerticalSeekBar) view.findViewById(R.id.seekbar);
 	
 		// Set the resources for the listview and the close button
 		lv_stopnames = (ListView) view.findViewById(R.id.lv_stopnames);
-		imgbtn_closeSchedule = (ImageButton) view.findViewById(R.id.imgbtn_closeschedule);
+		imgbtn_closeSchedule = (ImageButton) view.findViewById(R.id.imgbtn_closeschedule);		
 
+//		seekbar.setMinimumHeight(200 * stops.size());
+		
 		// Set the max for the seekbar as 100
-		seekbar.setMax(100);
-
-		// Handle the seekbar clicking.. Removed all clicking actions
-		// So the user can not adjust the seekbar
-		seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-
-			}
-
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-
-			}
-		});
+//		seekbar.setMax(100);
+//		
+//		
+//		// Handle the seekbar clicking.. Removed all clicking actions
+//		// So the user can not adjust the seekbar
+//		seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+//
+//			@Override
+//			public void onStopTrackingTouch(SeekBar seekBar) {
+//
+//			}
+//
+//			@Override
+//			public void onStartTrackingTouch(SeekBar seekBar) {
+//
+//			}
+//
+//			@Override
+//			public void onProgressChanged(SeekBar seekBar, int progress,
+//					boolean fromUser) {
+//
+//			}
+//		});
 
 		// Create the adapter and set the listview adapter
 		adapter = new MyListAdapter(getActivity(), stops);
@@ -234,34 +244,34 @@ public class Schedule extends Fragment {
 
 	// May be used in the future... Sets the position of the dots
 	// Which indicate each stop position
-	public void seekSetDotPosition(ArrayList<Integer> dotArray) {
-		
-		int [] tempIntArray = new int[lv_arr.length];
-		for(int i = 0; i < dotArray.size(); i++){
-			tempIntArray[i] = dotArray.get(i);
-		}
-		
-		// Set the dots on the seekbar and set the resource for the dots
-		seekbar.setDots(tempIntArray);
-		seekbar.setDotsDrawable(R.drawable.abc_btn_switch_to_on_mtrl_00001);
-
-	}
-	
-	// To calculate the total height of all items in ListView call with items = adapter.getCount()
-	public int[] getItemHeightofListView(ListView listView, int items) {
-	    ListAdapter adapter = listView.getAdapter();
-
-	    int grossElementHeight = 0;
-	    int[] dotPositions = new int[lv_arr.length];
-	    
-	    for (int i = 0; i < items; i++) {
-	        View childView = adapter.getView(i, null, listView);
-	        childView.measure(UNBOUNDED, UNBOUNDED);
-	        
-	        grossElementHeight += childView.getMeasuredHeight();
-	        dotPositions[i] = grossElementHeight;
-	    }
-	    return dotPositions;
-	}
+//	public void seekSetDotPosition(ArrayList<Integer> dotArray) {
+//		
+//		int [] tempIntArray = new int[lv_arr.length];
+//		for(int i = 0; i < dotArray.size(); i++){
+//			tempIntArray[i] = dotArray.get(i);
+//		}
+//		
+//		// Set the dots on the seekbar and set the resource for the dots
+//		seekbar.setDots(tempIntArray);
+//		seekbar.setDotsDrawable(R.drawable.abc_btn_switch_to_on_mtrl_00001);
+//
+//	}
+//	
+//	// To calculate the total height of all items in ListView call with items = adapter.getCount()
+//	public int[] getItemHeightofListView(ListView listView, int items) {
+//	    ListAdapter adapter = listView.getAdapter();
+//
+//	    int grossElementHeight = 0;
+//	    int[] dotPositions = new int[lv_arr.length];
+//	    
+//	    for (int i = 0; i < items; i++) {
+//	        View childView = adapter.getView(i, null, listView);
+//	        childView.measure(UNBOUNDED, UNBOUNDED);
+//	        
+//	        grossElementHeight += childView.getMeasuredHeight();
+//	        dotPositions[i] = grossElementHeight;
+//	    }
+//	    return dotPositions;
+//	}
 
 }

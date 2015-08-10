@@ -100,8 +100,14 @@ public class Connect extends AsyncTask<Void, Void, Void> {
 							"route_id").toString());
 
 					// Set the route title for this route
-					tempRoute.setRouteTitle(tempObj.get("route_long_name")
-							.toString());
+					// If the route long name is not blank then set the title to the "route_long_name"
+					if(!tempObj.get("route_long_name").toString().matches("")){
+					tempRoute.setRouteTitle(tempObj.get("route_long_name").toString());
+					}
+					// Otherwise, set the route title to the "route_short_name"
+					else{
+						tempRoute.setRouteTitle(tempObj.get("route_short_name").toString());
+					}
 
 					// Set the color of the route.. (Used for the route's polyline)
 					tempRoute.setColor(tempObj.get("route_text_color")
